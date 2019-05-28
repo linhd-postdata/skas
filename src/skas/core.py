@@ -7,10 +7,12 @@ import re
 
 import spacy
 
+from .pipeline import load_pipeline
+
 """
 Syllabification
 """
-nlp = spacy.load('es_core_news_md')
+nlp = load_pipeline('es_core_news_md')
 accents_re = re.compile("[áéíóú]", re.I | re.U)
 paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$", re.I | re.U)  # checks if a str ends in unaccented vowel/N/S
 
@@ -33,7 +35,7 @@ WEAK_VOWELS = set("iuüíúIÍUÜÚ")
 LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚy")
 LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhy")
 STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti", "un"}
-UNSTRESSED_UNACCENTED_MONOSYLLABLES = {"me", "nos", "te", "os", "lo", "la", "los", "las", "le", "les", "se", "tan"}
+UNSTRESSED_UNACCENTED_MONOSYLLABLES = {"me", "nos", "te", "os", "lo", "la", "los", "las", "le", "les", "se", "tan", "el", "mas", "te", "si", "tu", "de", "mi", "si", "tu", "que", "de", "con", "su"}
 """
 Metrical Analysis functions
 """
@@ -204,7 +206,7 @@ def get_syllables(word_list):
 def get_scansion(text):
     """
     Generates a list of dictionaries for each line
-    :param text: Full text to be analized
+    :param text: Full text to be analyzed
     :return: list of dictionaries per line
     :rtype: list
     """
