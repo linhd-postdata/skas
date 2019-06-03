@@ -22,23 +22,23 @@ if os.getenv('SPELLCHECK'):
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = 'SKAS'
+project = 'rantanplan'
 year = '2019'
 author = 'LINHD POSTDATA Project'
 copyright = '{0}, {1}'.format(year, author)
-version = release = '0.0.1'
+version = release = '0.1.0'
 
 pygments_style = 'trac'
 templates_path = ['.']
 extlinks = {
-    'issue': ('https://github.com/postdataproject/skas/issues/%s', '#'),
-    'pr': ('https://github.com/postdataproject/skas/pull/%s', 'PR #'),
+    'issue': ('https://github.com/linhd-postdata/rantanplan/issues/%s', '#'),
+    'pr': ('https://github.com/linhd-postdata/rantanplan/pull/%s', 'PR #'),
 }
 import sphinx_py3doc_enhanced_theme
 html_theme = "sphinx_py3doc_enhanced_theme"
 html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
 html_theme_options = {
-    'githuburl': 'https://github.com/postdataproject/skas/'
+    'githuburl': 'https://github.com/linhd-postdata/rantanplan/'
 }
 
 html_use_smartypants = True

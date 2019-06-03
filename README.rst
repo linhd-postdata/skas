@@ -15,45 +15,45 @@ Overview
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
-.. |docs| image:: https://readthedocs.org/projects/skas/badge/?style=flat
-    :target: https://readthedocs.org/projects/skas
+.. |docs| image:: https://readthedocs.org/projects/rantanplan/badge/?style=flat
+    :target: https://readthedocs.org/projects/rantanplan
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/postdataproject/skas.svg?branch=master
+.. |travis| image:: https://travis-ci.org/linhd-postdata/rantanplan.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/postdataproject/skas
+    :target: https://travis-ci.org/linhd-postdata/rantanplan
 
-.. |requires| image:: https://requires.io/github/postdataproject/skas/requirements.svg?branch=master
+.. |requires| image:: https://requires.io/github/linhd-postdata/rantanplan/requirements.svg?branch=master
     :alt: Requirements Status
-    :target: https://requires.io/github/postdataproject/skas/requirements/?branch=master
+    :target: https://requires.io/github/linhd-postdata/rantanplan/requirements/?branch=master
 
-.. |coveralls| image:: https://coveralls.io/repos/postdataproject/skas/badge.svg?branch=master&service=github
+.. |coveralls| image:: https://coveralls.io/repos/linhd-postdata/rantanplan/badge.svg?branch=master&service=github
     :alt: Coverage Status
-    :target: https://coveralls.io/r/postdataproject/skas
+    :target: https://coveralls.io/r/linhd-postdata/rantanplan
 
-.. |codecov| image:: https://codecov.io/github/postdataproject/skas/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/github/linhd-postdata/rantanplan/coverage.svg?branch=master
     :alt: Coverage Status
-    :target: https://codecov.io/github/postdataproject/skas
+    :target: https://codecov.io/github/linhd-postdata/rantanplan
 
-.. |version| image:: https://img.shields.io/pypi/v/skas.svg
+.. |version| image:: https://img.shields.io/pypi/v/rantanplan.svg
     :alt: PyPI Package latest release
-    :target: https://pypi.org/project/skas
+    :target: https://pypi.org/project/rantanplan
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/postdataproject/skas/v0.0.1.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/linhd-postdata/rantanplan/v0.1.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/postdataproject/skas/compare/v0.0.1...master
+    :target: https://github.com/linhd-postdata/rantanplan/compare/v0.1.0...master
 
-.. |wheel| image:: https://img.shields.io/pypi/wheel/skas.svg
+.. |wheel| image:: https://img.shields.io/pypi/wheel/rantanplan.svg
     :alt: PyPI Wheel
-    :target: https://pypi.org/project/skas
+    :target: https://pypi.org/project/rantanplan
 
-.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/skas.svg
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/rantanplan.svg
     :alt: Supported versions
-    :target: https://pypi.org/project/skas
+    :target: https://pypi.org/project/rantanplan
 
-.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/skas.svg
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/rantanplan.svg
     :alt: Supported implementations
-    :target: https://pypi.org/project/skas
+    :target: https://pypi.org/project/rantanplan
 
 
 .. end-badges
@@ -67,13 +67,13 @@ Installation
 
 ::
 
-    pip install skas
+    pip install rantanplan
 
 Documentation
 =============
 
 
-https://skas.readthedocs.io/
+https://rantanplan.readthedocs.io/
 
 
 Development

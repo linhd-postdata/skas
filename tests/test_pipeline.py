@@ -1,6 +1,6 @@
 import spacy
 
-from skas.pipeline import load_pipeline
+from rantanplan.pipeline import load_pipeline
 
 test_dict_list = [
     {'text': 'esto', 'pos_': '', 'tag_': '', '_.line': 0, '_.has_tmesis': False,
