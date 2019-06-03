@@ -37,10 +37,10 @@ def load_pipeline(lang=None):
         lang = 'es_core_news_md'
     nlp = spacy.load(lang)
     nlp.tokenizer = custom_tokenizer(nlp)
-    nlp.remove_pipe("tmesis") if nlp.has_pipe("tmesis") else None
-    nlp.add_pipe(TmesisMatcher(nlp), name="tmesis", first=True)
     nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
     nlp.add_pipe(AffixesMatcher(nlp), name="affixes", first=True)
+    nlp.remove_pipe("tmesis") if nlp.has_pipe("tmesis") else None
+    nlp.add_pipe(TmesisMatcher(nlp), name="tmesis", after="affixes")
     return nlp
 
 
