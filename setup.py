@@ -19,11 +19,16 @@ from setuptools.command.install import install
 class InstallWrapper(install):
     def run(self):
         self._download_spacy_es()
+        self._download_spacy_affixes_es()
         install.run(self)
 
     def _download_spacy_es(self):
         from spacy.cli import download
         download('es_core_news_md')
+
+    def _download_spacy_affixes_es(self):
+        from spacy_affixes.utils import download
+        download(lang='es')
 
 
 def read(*names, **kwargs):
