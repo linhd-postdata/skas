@@ -1,13 +1,13 @@
 import spacy
 
-from skas.core import get_orthographic_accent
-from skas.core import get_scansion
-from skas.core import get_syllables
-from skas.core import get_word_stress
-from skas.core import have_prosodic_liaison
-from skas.core import hyphenate
-from skas.core import is_paroxytone
-from skas.core import spacy_tag_to_dict
+from rantanplan.core import get_orthographic_accent
+from rantanplan.core import get_scansion
+from rantanplan.core import get_syllables
+from rantanplan.core import get_word_stress
+from rantanplan.core import have_prosodic_liaison
+from rantanplan.core import hyphenate
+from rantanplan.core import is_paroxytone
+from rantanplan.core import spacy_tag_to_dict
 
 nlp = spacy.load('es_core_news_md')
 

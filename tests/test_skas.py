@@ -1,7 +1,7 @@
 
 from click.testing import CliRunner
 
-from skas.cli import main
+from rantanplan.cli import main
 
 
 def test_main():
