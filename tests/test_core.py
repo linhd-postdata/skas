@@ -1,13 +1,13 @@
 import spacy
 
-from skas.core import get_orthographic_accent
-from skas.core import get_scansion
-from skas.core import get_syllables
-from skas.core import get_word_stress
-from skas.core import have_prosodic_liaison
-from skas.core import hyphenate
-from skas.core import is_paroxytone
-from skas.core import spacy_tag_to_dict
+from rantanplan.core import get_orthographic_accent
+from rantanplan.core import get_scansion
+from rantanplan.core import get_syllables
+from rantanplan.core import get_word_stress
+from rantanplan.core import have_prosodic_liaison
+from rantanplan.core import hyphenate
+from rantanplan.core import is_paroxytone
+from rantanplan.core import spacy_tag_to_dict
 
 nlp = spacy.load('es_core_news_md')
 
@@ -150,8 +150,8 @@ def test_get_scansion():
                                     {'syllable': 'sa', 'is_stressed': False}],
                            'stress_position': -2},
                           {'word': [{'syllable': 'luz', 'is_stressed': True}], 'stress_position': -1},
-                          {'word': [{'syllable': 'de', 'is_stressed': True, 'has_synalepha': True}],
-                           'stress_position': -1},
+                          {'word': [{'syllable': 'de', 'is_stressed': False, 'has_synalepha': True}],
+                           'stress_position': 0},
                           {'word': [{'syllable': 'o', 'is_stressed': False, 'has_sinaeresis': True},
                                     {'syllable': 'to', 'is_stressed': True},
                                     {'syllable': 'ño', 'is_stressed': False}],

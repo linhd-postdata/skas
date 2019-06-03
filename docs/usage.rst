@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use SKAS in a project::
+To use rantanplan in a project::
 
-	import skas
+	import rantanplan

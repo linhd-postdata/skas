@@ -1,2 +1,3 @@
 Click>=7.0
 spacy>=2.1
+spacy_affixes

@@ -19,11 +19,16 @@ from setuptools.command.install import install
 class InstallWrapper(install):
     def run(self):
         self._download_spacy_es()
+        self._download_spacy_affixes_es()
         install.run(self)
 
     def _download_spacy_es(self):
         from spacy.cli import download
         download('es_core_news_md')
+
+    def _download_spacy_affixes_es(self):
+        from spacy_affixes.utils import download
+        download(lang='es')
 
 
 def read(*names, **kwargs):
@@ -35,8 +40,8 @@ def read(*names, **kwargs):
 
 
 setup(
-    name='skas',
-    version='0.0.1',
+    name='rantanplan',
+    version='0.1.0',
     license='Apache Software License 2.0',
     description='Scansion tool for Spanish texts',
     long_description='%s\n%s' % (
@@ -45,7 +50,7 @@ setup(
     ),
     author='LINHD POSTDATA Project',
     author_email='info@linhd.uned.es',
-    url='https://github.com/postdataproject/skas',
+    url='https://github.com/linhd-postdata/rantanplan',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
@@ -66,9 +71,9 @@ setup(
         'Topic :: Utilities',
     ],
     project_urls={
-        'Documentation': 'https://skas.readthedocs.io/',
-        'Changelog': 'https://skas.readthedocs.io/en/latest/changelog.html',
-        'Issue Tracker': 'https://github.com/postdataproject/skas/issues',
+        'Documentation': 'https://rantanplan.readthedocs.io/',
+        'Changelog': 'https://rantanplan.readthedocs.io/en/latest/changelog.html',
+        'Issue Tracker': 'https://github.com/linhd-postdata/rantanplan/issues',
     },
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
@@ -82,7 +87,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'skas = skas.cli:main',
+            'rantanplan = rantanplan.cli:main',
         ]
     },
     cmdclass={
