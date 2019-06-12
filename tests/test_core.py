@@ -121,38 +121,45 @@ def test_get_scansion():
     «Ya el tiempo nos convida
     A los estudios nobles...»!"""
     output = [{'tokens': [{'word': [{'syllable': 'Siem', 'is_stressed': True},
-                                    {'syllable': 'pre', 'is_stressed': False, 'has_synalepha': True}],
+                                    {'syllable': 'pre', 'is_stressed': False,
+                                     'has_synalepha': True}],
                            'stress_position': -2},
-                          {'word': [{'syllable': 'en', 'is_stressed': True}], 'stress_position': -1},
-                          {'word': [{'syllable': 'oc', 'is_stressed': False, 'has_sinaeresis': True},
+                          {'word': [{'syllable': 'en', 'is_stressed': False}],
+                           'stress_position': 0},
+                          {'word': [{'syllable': 'oc', 'is_stressed': False},
                                     {'syllable': 'tu', 'is_stressed': True},
                                     {'syllable': 'bre', 'is_stressed': False}],
                            'stress_position': -2},
                           {'word': [{'syllable': 'co', 'is_stressed': False},
                                     {'syllable': 'men', 'is_stressed': False},
                                     {'syllable': 'za', 'is_stressed': True},
-                                    {'syllable': 'ba', 'is_stressed': False, 'has_synalepha': True}],
+                                    {'syllable': 'ba', 'is_stressed': False,
+                                     'has_synalepha': True}],
                            'stress_position': -2},
-                          {'word': [{'syllable': 'el', 'is_stressed': False}], 'stress_position': 0},
-                          {'word': [{'syllable': 'a', 'is_stressed': True, 'has_sinaeresis': True},
+                          {'word': [{'syllable': 'el', 'is_stressed': False}],
+                           'stress_position': 0},
+                          {'word': [{'syllable': 'a', 'is_stressed': True},
                                     {'syllable': 'ño', 'is_stressed': False}],
                            'stress_position': -2},
                           {'symbol': '.'}]},
               {'tokens': [{'symbol': '¡'},
-                          {'word': [{'syllable': 'Y', 'is_stressed': True}], 'stress_position': -1},
+                          {'word': [{'syllable': 'Y', 'is_stressed': True}],
+                           'stress_position': -1},
                           {'word': [{'syllable': 'cuán', 'is_stressed': True},
                                     {'syllable': 'tas', 'is_stressed': False}],
                            'stress_position': -2},
                           {'word': [{'syllable': 've', 'is_stressed': True},
                                     {'syllable': 'ces', 'is_stressed': False}],
                            'stress_position': -2},
-                          {'word': [{'syllable': 'e', 'is_stressed': True, 'has_sinaeresis': True},
+                          {'word': [{'syllable': 'e', 'is_stressed': True},
                                     {'syllable': 'sa', 'is_stressed': False}],
                            'stress_position': -2},
-                          {'word': [{'syllable': 'luz', 'is_stressed': True}], 'stress_position': -1},
-                          {'word': [{'syllable': 'de', 'is_stressed': False, 'has_synalepha': True}],
+                          {'word': [{'syllable': 'luz', 'is_stressed': True}],
+                           'stress_position': -1},
+                          {'word': [
+                              {'syllable': 'de', 'is_stressed': False, 'has_synalepha': True}],
                            'stress_position': 0},
-                          {'word': [{'syllable': 'o', 'is_stressed': False, 'has_sinaeresis': True},
+                          {'word': [{'syllable': 'o', 'is_stressed': False},
                                     {'syllable': 'to', 'is_stressed': True},
                                     {'syllable': 'ño', 'is_stressed': False}],
                            'stress_position': -2}]},
@@ -160,32 +167,35 @@ def test_get_scansion():
                            'stress_position': 0},
                           {'word': [{'syllable': 're', 'is_stressed': False},
                                     {'syllable': 'cor', 'is_stressed': False},
-                                    {'syllable': 'dó', 'is_stressed': True, 'has_synalepha': True}],
+                                    {'syllable': 'dó', 'is_stressed': True,
+                                     'has_synalepha': True}],
                            'stress_position': -1},
-                          {'word': [{'syllable': 'a', 'is_stressed': True, 'has_sinaeresis': True}],
-                           'stress_position': -1},
+                          {'word': [{'syllable': 'a', 'is_stressed': False}],
+                           'stress_position': 0},
                           {'word': [{'syllable': 'Fray', 'is_stressed': True}],
                            'stress_position': -1},
                           {'word': [{'syllable': 'Luis', 'is_stressed': True}],
                            'stress_position': -1},
                           {'symbol': ':'}]},
               {'tokens': [{'symbol': '«'},
-                          {'word': [{'syllable': 'Ya', 'is_stressed': True, 'has_synalepha': True}],
+                          {'word': [
+                              {'syllable': 'Ya', 'is_stressed': True, 'has_synalepha': True}],
                            'stress_position': -1},
-                          {'word': [{'syllable': 'el', 'is_stressed': False}], 'stress_position': 0},
+                          {'word': [{'syllable': 'el', 'is_stressed': False}],
+                           'stress_position': 0},
                           {'word': [{'syllable': 'tiem', 'is_stressed': True},
                                     {'syllable': 'po', 'is_stressed': False}],
                            'stress_position': -2},
-                          {'word': [{'syllable': 'nos', 'is_stressed': False}], 'stress_position': 0},
+                          {'word': [{'syllable': 'nos', 'is_stressed': False}],
+                           'stress_position': 0},
                           {'word': [{'syllable': 'con', 'is_stressed': False},
                                     {'syllable': 'vi', 'is_stressed': True},
                                     {'syllable': 'da', 'is_stressed': False}],
                            'stress_position': -2}]},
-              {'tokens': [{'word': [{'syllable': 'A',
-                                     'is_stressed': True,
-                                     'has_sinaeresis': True}],
-                           'stress_position': -1},
-                          {'word': [{'syllable': 'los', 'is_stressed': False}], 'stress_position': 0},
+              {'tokens': [{'word': [{'syllable': 'A', 'is_stressed': False}],
+                           'stress_position': 0},
+                          {'word': [{'syllable': 'los', 'is_stressed': False}],
+                           'stress_position': 0},
                           {'word': [{'syllable': 'es', 'is_stressed': False},
                                     {'syllable': 'tu', 'is_stressed': True},
                                     {'syllable': 'dios', 'is_stressed': False}],
@@ -196,7 +206,44 @@ def test_get_scansion():
                           {'symbol': '...'},
                           {'symbol': '»'},
                           {'symbol': '!'}]}]
+    assert get_scansion(text) == output
 
+
+def test_get_scansion_sinaeresis():
+    text = "héroe"
+    output = [{'tokens': [{'word': [{'syllable': 'hé', 'is_stressed': True},
+                                    {'syllable': 'ro', 'is_stressed': False,
+                                     'has_sinaeresis': True},
+                                    {'syllable': 'e', 'is_stressed': False}],
+                           'stress_position': -3}]}]
+    assert get_scansion(text) == output
+
+
+def test_get_scansion_affixes():
+    text = "antiquísimo"
+    output = [{'tokens': [{'word': [{'syllable': 'an', 'is_stressed': False},
+                                    {'syllable': 'ti', 'is_stressed': False},
+                                    {'syllable': 'quí', 'is_stressed': True},
+                                    {'syllable': 'si', 'is_stressed': False},
+                                    {'syllable': 'mo', 'is_stressed': False}],
+                           'stress_position': -3}]}]
+    assert get_scansion(text) == output
+
+
+def test_get_scansion_sinaeresis__synalepha_affixes():
+    text = "antiquísimo héroe"
+    output = [{'tokens': [{'word': [{'syllable': 'an', 'is_stressed': False},
+                                    {'syllable': 'ti', 'is_stressed': False},
+                                    {'syllable': 'quí', 'is_stressed': True},
+                                    {'syllable': 'si', 'is_stressed': False},
+                                    {'syllable': 'mo', 'is_stressed': False,
+                                     'has_synalepha': True}],
+                           'stress_position': -3},
+                          {'word': [{'syllable': 'hé', 'is_stressed': True},
+                                    {'syllable': 'ro', 'is_stressed': False,
+                                     'has_sinaeresis': True},
+                                    {'syllable': 'e', 'is_stressed': False}],
+                           'stress_position': -3}]}]
     assert get_scansion(text) == output
 
 
