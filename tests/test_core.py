@@ -24,6 +24,24 @@ def test_hyphenate():
     assert hyphenate(word) == output
 
 
+def test_hyphenate_umlaut_u_e():
+    word = "güegüecho"
+    output = ['güe', 'güe', 'cho']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_u_i():
+    word = "güito"
+    output = ['güi', 'to']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_u_i_tilde():
+    word = "agüío"
+    output = ['a', 'güí', 'o']
+    assert hyphenate(word) == output
+
+
 def test_get_orthographic_accent():
     syllable_list = ['plá', 'ta', 'no']
     output = 0
