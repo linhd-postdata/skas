@@ -22,7 +22,8 @@ letter_clusters_re = re.compile(r"""
     ([bcdfghjklmnñpqrstvxyz][hlr][aáeéiíoóuúü])|              # 5: any char followed by liquid and mute consonant
     ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúü])|        # 6: non-liquid consonant (adds hyphen)
     ([aáeéíoóú][aáeéíoóú])|                                   # 7: vowel group (adds hyphen)
-    ([a-záéíóúñ])                                             # 8: any char
+    (ü[eií])|                                                 # 8: umlaut 'u' diphthongs
+    ([a-záéíóúñ])                                             # 9: any char
 """, re.I | re.U | re.VERBOSE)  # re.VERBOSE is needed to be able to catch the regex group
 
 """
