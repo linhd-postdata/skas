@@ -22,8 +22,9 @@ letter_clusters_re = re.compile(r"""
     ([bcdfghjklmnñpqrstvxyz][hlr][aáeéiíoóuúü])|              # 5: any char followed by liquid and mute consonant
     ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúü])|        # 6: non-liquid consonant (adds hyphen)
     ([aáeéíoóú][aáeéíoóú])|                                   # 7: vowel group (adds hyphen)
-    ([a-záéíóúñ])                                             # 8: any char
-""", re.I | re.U | re.VERBOSE)  # re.VERBOSE is needed to be able to catch the regex group for parse()
+    (ü[eií])|                                                 # 8: umlaut 'u' diphthongs
+    ([a-záéíóúñ])                                             # 9: any char
+""", re.I | re.U | re.VERBOSE)  # re.VERBOSE is needed to be able to catch the regex group
 
 """
 Metrical Analysis
@@ -35,7 +36,7 @@ LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhy")
 STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti", "un"}
 UNSTRESSED_UNACCENTED_MONOSYLLABLES = {"me", "nos", "te", "os", "lo", "la", "los", "las", "le",
                                        "les", "se", "tan", "el", "mas", "te", "si", "tu", "de",
-                                       "mi", "si", "tu", "que", "de", "con", "su"}
+                                       "mi", "si", "tu", "que", "de", "su"}
 """
 Metrical Analysis functions
 """
@@ -126,14 +127,14 @@ def get_word_stress(word, pos, tag):
     :param word: List of str representing syllables
     :param pos: PoS tag from spacy ("DET")
     :param tag: Extended PoS tag info from spacy ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
-    :return: Dictionary with [original syllab word, stressed syllab. word, negative index position of stressed syllable]
+    :return: Dict with [original syllab word, stressed syllab. word, negative index position of stressed syllable or 0 if not stressed]
     :rtype: dict
     """
     syllable_list = hyphenate(word)
     if len(syllable_list) == 1:
-        if ((syllable_list[0] not in UNSTRESSED_UNACCENTED_MONOSYLLABLES)
-                and ((syllable_list[0] in STRESSED_UNACCENTED_MONOSYLLABLES)
-                     or (pos not in ("DET", "PRON"))
+        if ((syllable_list[0].lower() not in UNSTRESSED_UNACCENTED_MONOSYLLABLES)
+                and ((syllable_list[0].lower() in STRESSED_UNACCENTED_MONOSYLLABLES)
+                     or (pos not in ("DET", "PRON", "ADP"))
                      or (pos == "PRON" and tag.get("Case") == "Nom")
                      or (pos == "DET" and tag.get("Definite") == "Ind"))):
             stressed_position = -1
@@ -154,14 +155,16 @@ def get_word_stress(word, pos, tag):
     for index, syllable in enumerate(syllable_list):
         out_syllable_list.append(
             {"syllable": syllable, "is_stressed": len(syllable_list) - index == -stressed_position})
-        # Syneresis
+        if index < 1:
+            continue
+        # Sinaeresis
         first_syllable = syllable_list[index - 1]
         second_syllable = syllable
         if first_syllable and second_syllable and (
-                (first_syllable[-1] in STRONG_VOWELS and second_syllable[0] in STRONG_VOWELS) or (
-                first_syllable[-1] in WEAK_VOWELS and second_syllable[0] in STRONG_VOWELS) or (
-                        first_syllable[-1] in STRONG_VOWELS and second_syllable[0] in WEAK_VOWELS)):
-            out_syllable_list[0].update({'has_sinaeresis': True})
+                (first_syllable[-1] in STRONG_VOWELS and second_syllable[0] in STRONG_VOWELS)
+                or (first_syllable[-1] in WEAK_VOWELS and second_syllable[0] in STRONG_VOWELS)
+                or (first_syllable[-1] in STRONG_VOWELS and second_syllable[0] in WEAK_VOWELS)):
+            out_syllable_list[index-1].update({'has_sinaeresis': True})
     return {
         'word': out_syllable_list, "stress_position": stressed_position,
     }
