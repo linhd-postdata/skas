@@ -5,6 +5,8 @@
 
 import re
 
+from spacy.tokens import Doc
+
 from .pipeline import load_pipeline
 
 """
@@ -217,7 +219,11 @@ def get_scansion(text):
     :return: list of dictionaries per line
     :rtype: list
     """
-    tokens = nlp(text)
+    if isinstance(text, Doc):
+        tokens = text
+    else:
+        nlp = load_pipeline()
+        tokens = nlp(text)
     seen_tokens = []
     lines = []
     for token in tokens:
