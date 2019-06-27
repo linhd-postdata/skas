@@ -84,7 +84,13 @@ def test_hyphenate_umlaut_u_e():
     assert hyphenate(word) == output
 
 
-def test_hyphenate_umlaut_hyatus_with_consonant():
+def test_hyphenate_umlaut_hyatus_with_consonant_1():
+    word = "insacïable"
+    output = ['in', 'sa', 'cï', 'a', 'ble']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_hyatus_with_consonant_2():
     word = "ruïdo"
     output = ['ru', 'ï', 'do']
     assert hyphenate(word) == output

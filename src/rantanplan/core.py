@@ -22,7 +22,7 @@ letter_clusters_re = re.compile(r"""
     ([iuü]h[aáeéíoóú])|                                       # 3: closed vowels
     ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][hlr][aáeéiíoóuúü])|   # 4: liquid and mute consonants (adds hyphen)
     ([bcdfghjklmnñpqrstvxyz][hlr][aáeéiíoóuúü])|              # 5: any char followed by liquid and mute consonant
-    ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúü])|        # 6: non-liquid consonant (adds hyphen)
+    ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúüï])|        # 6: non-liquid consonant (adds hyphen)
     ([aáeéíoóú][aáeéíoóú])|                                   # 7: vowel group (adds hyphen)
     (ü[eií])|                                                 # 8: umlaut 'u' diphthongs
     ([aeiou][äëïöü])|                                         # 9: Explicit hyatus with umlaut vowels, first part
