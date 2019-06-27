@@ -25,7 +25,9 @@ letter_clusters_re = re.compile(r"""
     ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúü])|        # 6: non-liquid consonant (adds hyphen)
     ([aáeéíoóú][aáeéíoóú])|                                   # 7: vowel group (adds hyphen)
     (ü[eií])|                                                 # 8: umlaut 'u' diphthongs
-    ([a-záéíóúñ])                                             # 9: any char
+    ([aeiou][äëïöü])|                                         # 9: Explicit hyatus with umlaut vowels, first part
+    ([äëïöü][a-z])|                                           #10: Explicit hyatus with umlaut vowels, second part
+    ([a-záéíóúñ])                                             #11: any char
 """, re.I | re.U | re.VERBOSE)  # re.VERBOSE is needed to be able to catch the regex group
 
 """
@@ -75,7 +77,7 @@ def hyphenate(word):
         m = letter_clusters_re.search(word)
         if m is not None:
             # Adds hyphen to syllables if regex pattern is 4, 6, or 7
-            output += "-" if m.lastindex in set([4, 6, 7]) else ""
+            output += "-" if m.lastindex in set([4, 6, 7, 9, 10]) else ""
         word = word[1:]
     return output.split("-")
 

@@ -84,6 +84,18 @@ def test_hyphenate_umlaut_u_e():
     assert hyphenate(word) == output
 
 
+def test_hyphenate_umlaut_hyatus_with_consonant():
+    word = "ruïdo"
+    output = ['ru', 'ï', 'do']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_hyatus_with_vowel():
+    word = "ruëa"
+    output = ['ru', 'ë', 'a']
+    assert hyphenate(word) == output
+
+
 def test_hyphenate_umlaut_u_i():
     word = "güito"
     output = ['güi', 'to']
