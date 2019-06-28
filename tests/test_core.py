@@ -1,5 +1,8 @@
+from unittest import mock
+
 import spacy
 
+import rantanplan.core
 from rantanplan.core import get_orthographic_accent
 from rantanplan.core import get_scansion
 from rantanplan.core import get_syllables
@@ -10,6 +13,57 @@ from rantanplan.core import is_paroxytone
 from rantanplan.core import spacy_tag_to_dict
 
 nlp = spacy.load('es_core_news_md')
+
+
+class TokenMock(mock.MagicMock):
+    _ = property(lambda self: mock.Mock(has_tmesis=self.has_tmesis,
+                                        line=self.line))
+
+    def __isinstance__(self, token):  # noqa
+        return True
+
+    @staticmethod
+    def is_ancestor(token):  # noqa
+        return True
+
+    @staticmethod
+    def nbor():  # noqa
+        return TokenMock()
+
+
+def test_get_scansion_spacy_doc(monkeypatch):
+    token = TokenMock(text="Agüita", i=0, is_punct=False, has_tmesis=False, line=1)
+
+    def mockreturn(lang=None):
+        return lambda _: [
+            token
+        ]
+
+    monkeypatch.setattr(rantanplan.core, 'load_pipeline', mockreturn)
+    enjambment = get_scansion(token)
+    assert enjambment == [
+        {
+            'tokens': [
+                {
+                    'word': [
+                        {
+                            'syllable': 'A',
+                            'is_stressed': False
+                        },
+                        {
+                            'syllable': 'güi',
+                            'is_stressed': True
+                        },
+                        {
+                            'syllable': 'ta',
+                            'is_stressed': False
+                        }
+                    ],
+                    'stress_position': -2
+                }
+            ]
+        }
+    ]
 
 
 def test_have_prosodic_liaison():
@@ -27,6 +81,24 @@ def test_hyphenate():
 def test_hyphenate_umlaut_u_e():
     word = "güegüecho"
     output = ['güe', 'güe', 'cho']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_hyatus_with_consonant_1():
+    word = "insacïable"
+    output = ['in', 'sa', 'cï', 'a', 'ble']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_hyatus_with_consonant_2():
+    word = "ruïdo"
+    output = ['ru', 'ï', 'do']
+    assert hyphenate(word) == output
+
+
+def test_hyphenate_umlaut_hyatus_with_vowel():
+    word = "ruëa"
+    output = ['ru', 'ë', 'a']
     assert hyphenate(word) == output
 
 
