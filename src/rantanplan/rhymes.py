@@ -4,21 +4,8 @@ import string
 
 from spacy_affixes.utils import strip_accents
 
-
-def get_stressed_endings(scansion):
-    """Return a list of word endings, from the stressed position,
-    from a scansion list of tokens"""
-    endings = []
-    for line in scansion:
-        words = [word for word in line["tokens"] if "symbol" not in word]
-        syllables_count = sum(len(word["word"]) for word in words)
-        last_word = words[-1]
-        last_word_ending = last_word["word"][last_word["stress_position"]:]
-        ending = [syllable["syllable"] for syllable in last_word_ending]
-        endings.append((ending, syllables_count, last_word["stress_position"]))
-    return endings
-
-
+ASSONANT_RHYME = "assonant"
+CONSONANT_RHYME = "consonant"
 CONSONANTS = r"bcdfghjklmnñpqrstvwxyz"
 UNSTRESSED_VOWELS = r"aeiou"
 STRESSED_VOWELS = r"áéíóúäëïöü"
@@ -34,46 +21,50 @@ DIPHTHONG_H_RE = re.compile(fr'([{VOWELS}])h([{VOWELS}])', re.U | re.I)
 DIPHTHONG_Y_RE = re.compile(fr'([{VOWELS}])h?y([^{VOWELS}])', re.U | re.I)
 STRUCTURES = (
     (
-        "consonant",
+        CONSONANT_RHYME,
         "sonnet",
         r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2})",
         lambda syllables: all(13 > syl > 10 for syl in syllables)
     ),
-    ("consonant", "couplet", r"aa", lambda x: True),
+    (CONSONANT_RHYME, "couplet", r"aa", lambda x: True),
     (
-        "assonant",
+        ASSONANT_RHYME,
         "romance",
         r"((.b)+)|((.a)+)",
         lambda syllables: statistics.median(syllables) == 8
     ),
     (
-        "assonant",
+        ASSONANT_RHYME,
         "haiku",
         r".*",
         lambda syllables: re.compile(r"(575)+").match("".join(
             [str(syl)for syl in syllables]
         ))
     ),
-    ("assonant", "couplet", r"aa", lambda _: True),
+    (ASSONANT_RHYME, "couplet", r"aa", lambda _: True),
 )
 
 
-def get_rhymes(stressed_endings, assonance=False, relaxation=False,
-               offset=None, free_verse_symbol="-"):
-    """From a list of syllables from the last stressed syllable of the ending
-    word of each line (stressed_endings), return a tuple with two lists:
-    - rhyme pattern of each line (e.g., a, b, b, a)
-    - rhyme ending of each line (e.g., ado, ón, ado, ón)
-    The rhyme checking method can be assonant (assonance=True) or
-    consonant (default). Moreover, some dipthongs relaxing rules can be
-    applied (relaxation=False) so the weak vowels are removed when checking
-    the ending syllables.
-    By default, all verses are checked, that means that a poem might match
-    lines 1 and 100 if the ending is the same. To control how many lines
-    should a matching rhyme occur, an offset can be set to an arbitrary
-    number, effectively allowing rhymes that only occur between
-    lines i and i + offset. The symbol for free verse can be set
-    using free_verse_symbol (defaults to '-')"""
+def get_stressed_endings(scansion):
+    """Return a list of word endings starting at the stressed position,
+    from a scansion list of tokens as input"""
+    endings = []
+    for line in scansion:
+        words = [word for word in line["tokens"] if "symbol" not in word]
+        syllables_count = sum(len(word["word"]) for word in words)
+        last_word = words[-1]
+        last_word_ending = last_word["word"][last_word["stress_position"]:]
+        ending = [syllable["syllable"] for syllable in last_word_ending]
+        endings.append((ending, syllables_count, last_word["stress_position"]))
+    return endings
+
+
+def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
+    """Clean syllables from stressed_endings depending on the rhyme kind,
+    assonance or consonant, and some relaxation of dipthongs for rhyming
+    purposes. Stress is also marked by upper casing the corresponding
+    syllable. The codes for the endings, the rhymes in numerical form, and
+    a set with endings of possible free verses are returned."""
     codes = {}
     code_numbers = []
     unique = set()
@@ -100,16 +91,26 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
         else:
             unique.discard(codes[ending])
         code_numbers.append(codes[ending])
-    code2endings = {v: k for k, v in codes.items()}
-    # Adjust for free verses and assign letter codes
+    # Invert codes to endings
+    codes2endings = {v: k for k, v in codes.items()}
+    return codes2endings, code_numbers, unique
+
+
+def assign_letter_codes(codes, code_numbers, free_verses, offset=None):
+    """Adjust for free verses and assign letter codes.
+    By default, all verses are checked, that means that a poem might match
+    lines 1 and 100 if the ending is the same. To control how many lines
+    should a matching rhyme occur in, an offset can be set to an arbitrary
+    number, effectively allowing rhymes that only occur between
+    lines i and i + offset."""
     letters = {}
     rhymes = []
     endings = []
     last_found = {}
     for index, rhyme in enumerate(code_numbers):
-        if rhyme in unique:
+        if rhyme in free_verses:
             rhyme_letter = -1  # free verse
-            endings.append("")
+            endings.append('')  # do not track free verse endings
         else:
             if rhyme not in letters:
                 letters[rhyme] = len(letters)
@@ -119,14 +120,17 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
                     and offset is not None
                     and index - last_found[rhyme] > offset):
                 rhymes[last_found[rhyme]] = -1  # free verse
-                endings[last_found[rhyme]] = ''
+                endings[last_found[rhyme]] = ''  # free verse ending
             last_found[rhyme] = index
-            endings.append(code2endings[rhyme])
+            endings.append(codes[rhyme])
         rhymes.append(rhyme_letter)
-    # Reorder letters
-    rhyme_letters = []
+    return rhymes, endings
+
+
+def sort_rhyme_letters(rhymes, free_verse_symbol):
+    """Reorder rhyme letters so first rhyme is always an 'a'."""
+    sorted_rhymes = []
     letters = {}
-    stresses = []
     for rhyme in rhymes:
         if rhyme < 0:  # free verse
             rhyme_letter = free_verse_symbol
@@ -134,10 +138,16 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
             if rhyme not in letters:
                 letters[rhyme] = len(letters)
             rhyme_letter = string.ascii_letters[letters[rhyme]]
-        rhyme_letters.append(rhyme_letter)
-    # Extract stress
+        sorted_rhymes.append(rhyme_letter)
+    return sorted_rhymes
+
+
+def split_stress(endings):
+    """Extract stress from endings and return the split result"""
     stresses = []
+    unstressed_endings = []
     for index, ending in enumerate(endings):
+        unstressed_endings.append(ending)
         if not ending:
             stresses.append(0)
         ending_lower = ending.lower()
@@ -146,8 +156,40 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
                          for pos, char in enumerate(ending)
                          if char.isupper()]
             stresses.append(positions[0])  # only return first stress detected
-            endings[index] = ending_lower
-    return rhyme_letters, endings, stresses
+            unstressed_endings[index] = ending_lower
+    return stresses, unstressed_endings
+
+
+def get_rhymes(stressed_endings, assonance=False, relaxation=False,
+               offset=None, free_verse_symbol="-"):
+    """From a list of syllables from the last stressed syllable of the ending
+    word of each line (stressed_endings), return a tuple with two lists:
+    - rhyme pattern of each line (e.g., a, b, b, a)
+    - rhyme ending of each line (e.g., ado, ón, ado, ón)
+    The rhyme checking method can be assonant (assonance=True) or
+    consonant (default). Moreover, some dipthongs relaxing rules can be
+    applied (relaxation=False) so the weak vowels are removed when checking
+    the ending syllables.
+    By default, all verses are checked, that means that a poem might match
+    lines 1 and 100 if the ending is the same. To control how many lines
+    should a matching rhyme occur, an offset can be set to an arbitrary
+    number, effectively allowing rhymes that only occur between
+    lines i and i + offset. The symbol for free verse can be set
+    using free_verse_symbol (defaults to '-')"""
+    # Get a numerical representation of rhymes using numbers and
+    # identifying free verses
+    codes, ending_codes, free_verses = get_clean_codes(
+        stressed_endings, assonance, relaxation
+    )
+    # Get the actual rhymes and endings adjusting for free verses
+    unsorted_rhymes, endings = assign_letter_codes(
+        codes, ending_codes, free_verses, offset
+    )
+    # Reorder rhyme letters so first rhyme is always an 'a'
+    rhymes = sort_rhyme_letters(unsorted_rhymes, free_verse_symbol)
+    # Extract stress from endings
+    stresses, unstressed_endings = split_stress(endings)
+    return rhymes, unstressed_endings, stresses
 
 
 def search_structure_index(rhyme, syllables_count, structure_key):
@@ -166,7 +208,7 @@ def get_analysis(scansion, offset=4):
     best_structure = None
     # Prefer consonance to assonance
     for assonance in (False, True):
-        rhyme_type = "assonant" if assonance else "consonant"
+        rhyme_type = ASSONANT_RHYME if assonance else CONSONANT_RHYME
         # Prefer relaxation to stricness
         for relaxation in (True, False):
             rhymes, endings, endings_stress = get_rhymes(
