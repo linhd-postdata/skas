@@ -8,9 +8,9 @@ from rantanplan.core import get_scansion
 from rantanplan.core import get_syllables
 from rantanplan.core import get_word_stress
 from rantanplan.core import have_prosodic_liaison
-from rantanplan.core import hyphenate
 from rantanplan.core import is_paroxytone
 from rantanplan.core import spacy_tag_to_dict
+from rantanplan.core import syllabify
 
 nlp = spacy.load('es_core_news_md')
 
@@ -72,46 +72,156 @@ def test_have_prosodic_liaison():
     assert have_prosodic_liaison(first_syllable, second_syllable) is True
 
 
-def test_hyphenate():
-    word = "platanero"
-    output = ['pla', 'ta', 'ne', 'ro']
-    assert hyphenate(word) == output
+def test_syllabify_exceptions_en():
+    word = "entender"
+    output = ['en', 'ten', 'der']
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_u_e():
+def test_syllabify_exceptions_en_2():
+    word = "desentender"
+    output = ['de', 'sen', 'ten', 'der']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_en_3():
+    word = "desenmarañados"
+    output = ['de', 'sen', 'ma', 'ra', 'ña', 'dos']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_obrep():
+    word = "obrepticio"
+    output = ['ob', 'rep', 'ti', 'cio']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_abrog():
+    word = "abrogar"
+    output = ['ab', 'ro', 'gar']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_prefix_des_consonant():
+    word = "destapar"
+    output = ['des', 'ta', 'par']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_prefix_sin_consonant():
+    word = "sinhueso"
+    output = ['sin', 'hue', 'so']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_exceptions_rh_dipthong():
+    word = "marhuenda"
+    output = ['mar', 'huen', 'da']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_tl():
+    word = "atlante"
+    output = ['at', 'lan', 'te']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_1():
+    word = "antihumano"
+    output = ['an', 'ti', 'hu', 'ma', 'no']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_2():
+    word = "entrehierro"
+    output = ['en', 'tre', 'hie', 'rro']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_3():
+    word = "yihad"
+    output = ['yi', 'had']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_4():
+    word = "coche"
+    output = ['co', 'che']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_4_rl():
+    word = "abarloar"
+    output = ['a', 'bar', 'lo', 'ar']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_5():
+    word = "checo"
+    output = ['che', 'co']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_6():
+    word = "año"
+    output = ['a', 'ño']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_group_7():
+    word = "desvirtúe"
+    output = ['des', 'vir', 'tú', 'e']
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_umlaut_u_e():
     word = "güegüecho"
     output = ['güe', 'güe', 'cho']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_hyatus_with_consonant_1():
+def test_syllabify_umlaut_hyatus_with_consonant_1():
     word = "insacïable"
     output = ['in', 'sa', 'cï', 'a', 'ble']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_hyatus_with_consonant_2():
+def test_syllabify_umlaut_hyatus_with_consonant_2():
     word = "ruïdo"
     output = ['ru', 'ï', 'do']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_hyatus_with_vowel():
+def test_syllabify_umlaut_hyatus_with_vowel():
     word = "ruëa"
     output = ['ru', 'ë', 'a']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_u_i():
+def test_syllabify_umlaut_u_i():
     word = "güito"
     output = ['güi', 'to']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
 
 
-def test_hyphenate_umlaut_u_i_tilde():
+def test_syllabify_umlaut_u_i_tilde():
     word = "agüío"
     output = ['a', 'güí', 'o']
-    assert hyphenate(word) == output
+    assert syllabify(word)[0] == output
+
+
+def test_syllabify_alternatives():
+    word = "arcaizabas"
+    output = (['ar', 'cai', 'za', 'bas'],
+              [(['ar', 'ca', 'i', 'za', 'bas'], (1, 2))])
+    assert syllabify(word) == output
+
+
+def test_syllabify_alternatives_2():
+    word = "puntual"
+    output = (['pun', 'tual'],
+              [(['pun', 'tu', 'al'], (1, 2))])
+    assert syllabify(word) == output
 
 
 def test_get_orthographic_accent():
