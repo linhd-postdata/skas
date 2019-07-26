@@ -19,29 +19,44 @@ CONSONANTS_RE = re.compile(fr'[{CONSONANTS}]+', re.U | re.I)
 INITIAL_CONSONANTS_RE = re.compile(fr'^[{CONSONANTS}]+', re.U | re.I)
 DIPHTHONG_H_RE = re.compile(fr'([{VOWELS}])h([{VOWELS}])', re.U | re.I)
 DIPHTHONG_Y_RE = re.compile(fr'([{VOWELS}])h?y([^{VOWELS}])', re.U | re.I)
+# Stanza structures where each tuple is defined as follows:
+# (
+#     CONSONANT_RHYME | ASSONANT_RHYME,
+#     "structure name",
+#     r".*",  # regular expression to match the rhymed line pattern
+#     lambda lengths: True  # function checking a condition on line lengths
+# )
+# Structures will be checked in order of definition, the first one to match
+# will be chosen.
 STRUCTURES = (
     (
         CONSONANT_RHYME,
         "sonnet",
         r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2})",
-        lambda syllables: all(13 > syl > 10 for syl in syllables)
-    ),
-    (CONSONANT_RHYME, "couplet", r"aa", lambda x: True),
-    (
+        lambda lengths: all(13 > length > 10 for length in lengths)
+    ), (
+        CONSONANT_RHYME,
+        "couplet",
+        r"aa",
+        lambda x: True
+    ), (
         ASSONANT_RHYME,
         "romance",
         r"((.b)+)|((.a)+)",
-        lambda syllables: statistics.median(syllables) == 8
-    ),
-    (
+        lambda lengths: statistics.median(lengths) == 8
+    ), (
         ASSONANT_RHYME,
         "haiku",
         r".*",
-        lambda syllables: re.compile(r"(575)+").match("".join(
-            [str(syl)for syl in syllables]
+        lambda lengths: re.compile(r"(575)+").match("".join(
+            [str(length)for length in lengths]
         ))
+    ), (
+        ASSONANT_RHYME,
+        "couplet",
+        r"aa",
+        lambda _: True
     ),
-    (ASSONANT_RHYME, "couplet", r"aa", lambda _: True),
 )
 
 
@@ -64,7 +79,7 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     assonance or consonant, and some relaxation of dipthongs for rhyming
     purposes. Stress is also marked by upper casing the corresponding
     syllable. The codes for the endings, the rhymes in numerical form, and
-    a set with endings of possible free verses are returned."""
+    a set with endings of possible unrhymed verses are returned."""
     codes = {}
     code_numbers = []
     unique = set()
@@ -96,8 +111,8 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     return codes2endings, code_numbers, unique
 
 
-def assign_letter_codes(codes, code_numbers, free_verses, offset=None):
-    """Adjust for free verses and assign letter codes.
+def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
+    """Adjust for unrhymed verses and assign letter codes.
     By default, all verses are checked, that means that a poem might match
     lines 1 and 100 if the ending is the same. To control how many lines
     should a matching rhyme occur in, an offset can be set to an arbitrary
@@ -108,32 +123,32 @@ def assign_letter_codes(codes, code_numbers, free_verses, offset=None):
     endings = []
     last_found = {}
     for index, rhyme in enumerate(code_numbers):
-        if rhyme in free_verses:
-            rhyme_letter = -1  # free verse
-            endings.append('')  # do not track free verse endings
+        if rhyme in unrhymed_verses:
+            rhyme_letter = -1  # unrhymed verse
+            endings.append('')  # do not track unrhymed verse endings
         else:
             if rhyme not in letters:
                 letters[rhyme] = len(letters)
             rhyme_letter = letters[rhyme]
-            # Reassign free verses if an offset is set
+            # Reassign unrhymed verses if an offset is set
             if (rhyme in last_found
                     and offset is not None
                     and index - last_found[rhyme] > offset):
-                rhymes[last_found[rhyme]] = -1  # free verse
-                endings[last_found[rhyme]] = ''  # free verse ending
+                rhymes[last_found[rhyme]] = -1  # unrhymed verse
+                endings[last_found[rhyme]] = ''  # unrhymed verse ending
             last_found[rhyme] = index
             endings.append(codes[rhyme])
         rhymes.append(rhyme_letter)
     return rhymes, endings
 
 
-def sort_rhyme_letters(rhymes, free_verse_symbol):
+def sort_rhyme_letters(rhymes, unrhymed_verse_symbol):
     """Reorder rhyme letters so first rhyme is always an 'a'."""
     sorted_rhymes = []
     letters = {}
     for rhyme in rhymes:
-        if rhyme < 0:  # free verse
-            rhyme_letter = free_verse_symbol
+        if rhyme < 0:  # unrhymed verse
+            rhyme_letter = unrhymed_verse_symbol
         else:
             if rhyme not in letters:
                 letters[rhyme] = len(letters)
@@ -161,7 +176,7 @@ def split_stress(endings):
 
 
 def get_rhymes(stressed_endings, assonance=False, relaxation=False,
-               offset=None, free_verse_symbol="-"):
+               offset=None, unrhymed_verse_symbol="-"):
     """From a list of syllables from the last stressed syllable of the ending
     word of each line (stressed_endings), return a tuple with two lists:
     - rhyme pattern of each line (e.g., a, b, b, a)
@@ -174,25 +189,29 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     lines 1 and 100 if the ending is the same. To control how many lines
     should a matching rhyme occur, an offset can be set to an arbitrary
     number, effectively allowing rhymes that only occur between
-    lines i and i + offset. The symbol for free verse can be set
-    using free_verse_symbol (defaults to '-')"""
+    lines i and i + offset. The symbol for unrhymed verse can be set
+    using unrhymed_verse_symbol (defaults to '-')"""
     # Get a numerical representation of rhymes using numbers and
-    # identifying free verses
-    codes, ending_codes, free_verses = get_clean_codes(
+    # identifying unrhymed verses
+    codes, ending_codes, unrhymed_verses = get_clean_codes(
         stressed_endings, assonance, relaxation
     )
-    # Get the actual rhymes and endings adjusting for free verses
+    # Get the actual rhymes and endings adjusting for unrhymed verses
     unsorted_rhymes, endings = assign_letter_codes(
-        codes, ending_codes, free_verses, offset
+        codes, ending_codes, unrhymed_verses, offset
     )
     # Reorder rhyme letters so first rhyme is always an 'a'
-    rhymes = sort_rhyme_letters(unsorted_rhymes, free_verse_symbol)
+    rhymes = sort_rhyme_letters(unsorted_rhymes, unrhymed_verse_symbol)
     # Extract stress from endings
     stresses, unstressed_endings = split_stress(endings)
     return rhymes, unstressed_endings, stresses
 
 
 def search_structure_index(rhyme, syllables_count, structure_key):
+    """Search in stanza structures for a structure that matches assonance or
+    consonance, a rhyme pattern, and a condition on the lengths of sylalbles
+    of lines. For the first matching structure, its index in STRUCTURES will
+    be returned"""
     for index, (key, _, structure, func) in enumerate(STRUCTURES):
         if (key == structure_key
                 and re.compile(structure).match(rhyme)
@@ -200,7 +219,7 @@ def search_structure_index(rhyme, syllables_count, structure_key):
             return index
 
 
-def get_analysis(scansion, offset=4):
+def analyze_rhyme(scansion, offset=4):
     """Analyze the syllables of a text to propose a possible set of
     rhyme structure, rhyme name, rhyme endings, and rhyme pattern"""
     stressed_endings = get_stressed_endings(scansion)
