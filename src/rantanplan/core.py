@@ -19,7 +19,6 @@ from .rhymes import analyze_rhyme
 """
 Syllabification
 """
-NLP = None
 accents_re = re.compile("[áéíóú]", re.I | re.U)
 paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$", re.I | re.U)  # checks if a str ends in unaccented vowel/N/S
 
@@ -296,13 +295,11 @@ def get_scansion(text, rhyme_analysis=False):
     :return: list of dictionaries per line
     :rtype: list
     """
-    global NLP
     if isinstance(text, Doc):
         tokens = text
     else:
-        if NLP is None:
-            NLP = load_pipeline()
-        tokens = NLP(text)
+        nlp = load_pipeline()
+        tokens = nlp(text)
     seen_tokens = []
     lines = []
     for token in tokens:

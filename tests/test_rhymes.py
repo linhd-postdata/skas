@@ -1,9 +1,6 @@
-import spacy
-
 from rantanplan.rhymes import assign_letter_codes
 from rantanplan.rhymes import get_clean_codes
 from rantanplan.rhymes import get_stressed_endings
-from rantanplan.rhymes import STRUCTURES
 
 
 def test_get_stressed_endings():
@@ -11,16 +8,28 @@ def test_get_stressed_endings():
     # mano
     # prisión
     lines = [
-        {'tokens': [{'word': [{'syllable': 'plá', 'is_stressed': True},
-            {'syllable': 'ta', 'is_stressed': False},
-            {'syllable': 'no', 'is_stressed': False}],
-            'stress_position': -3}]},
-        {'tokens': [{'word': [{'syllable': 'ma', 'is_stressed': True},
-            {'syllable': 'no', 'is_stressed': False}],
-            'stress_position': -2}]},
-        {'tokens': [{'word': [{'syllable': 'pri', 'is_stressed': False},
-            {'syllable': 'sión', 'is_stressed': True}],
-            'stress_position': -1}]}
+        {'tokens': [{
+            'word': [
+                {'syllable': 'plá', 'is_stressed': True},
+                {'syllable': 'ta', 'is_stressed': False},
+                {'syllable': 'no', 'is_stressed': False}
+            ],
+            'stress_position': -3}
+        ]},
+        {'tokens': [{
+            'word': [
+                {'syllable': 'ma', 'is_stressed': True},
+                {'syllable': 'no', 'is_stressed': False}
+            ],
+            'stress_position': -2}
+        ]},
+        {'tokens': [{
+            'word': [
+                {'syllable': 'pri', 'is_stressed': False},
+                {'syllable': 'sión', 'is_stressed': True}
+            ],
+            'stress_position': -1}
+        ]}
     ]
     output = [
         (['plá', 'ta', 'no'], 3, -3),
@@ -157,8 +166,8 @@ def get_assign_letter_codes():
         ['Ao', 'O', 'Aa', 'O', 'Aa', 'O', 'Ao', 'O',
          'Ao', 'O', 'Ia', 'O', 'Ia', 'O', '', 'O']
     )
-    assert assign_letter_codes(clean_codes) == output
-    assert assign_letter_codes(clean_codes, offset=None) == output
+    assert assign_letter_codes(*clean_codes) == output
+    assert assign_letter_codes(*clean_codes, offset=None) == output
 
 
 def get_assign_letter_codes_offset():
@@ -172,5 +181,5 @@ def get_assign_letter_codes_offset():
         ['', 'O', 'Aa', 'O', 'Aa', 'O', 'Ao', 'O',
          'Ao', 'O', 'Ia', 'O', 'Ia', 'O', '', 'O']
     )
-    assert assign_letter_codes(clean_codes) == output
-    assert assign_letter_codes(clean_codes, offset=4) == output
+    assert assign_letter_codes(*clean_codes) == output
+    assert assign_letter_codes(*clean_codes, offset=4) == output

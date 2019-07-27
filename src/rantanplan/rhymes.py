@@ -91,7 +91,7 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
         stressed_ending[stressed_position] = stressed_ending_upper
         # TODO: Other forms of relaxation should be tried iteratively, such as
         # lava ~ naba, vaya ~ valla, ceceo ~ zezeo, Venus ~ menos,
-        # (also cases changing `i` for `e`), etc. 
+        # (also cases changing `i` for `e`), etc.
         if relaxation:
             ending = "".join(WEAK_VOWELS_RE.sub(r"\1", syll, count=1)
                              for syll in stressed_ending)

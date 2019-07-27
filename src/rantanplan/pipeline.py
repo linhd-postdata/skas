@@ -25,18 +25,25 @@ def custom_tokenizer(nlp):
                      infix_finditer=infix_re.finditer, token_match=None)
 
 
+# load_pipeline should work as a "singleton"
+_load_pipeline = {}
+
+
 def load_pipeline(lang=None):
     """
     Loads the new pipeline with the custom tokenizer
     :param lang: Spacy language model
     :return: New custom language model
     """
+    global _load_pipeline
     if lang is None:
         lang = 'es_core_news_md'
-    nlp = spacy.load(lang)
-    nlp.tokenizer = custom_tokenizer(nlp)
-    nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
-    suffixes = {k: v for k, v in load_affixes().items() if k.startswith(AFFIXES_SUFFIX)}
-    affixes_matcher = AffixesMatcher(nlp, split_on=["VERB"], rules=suffixes)
-    nlp.add_pipe(affixes_matcher, name="affixes", first=True)
-    return nlp
+    if lang not in _load_pipeline:
+        nlp = spacy.load(lang)
+        nlp.tokenizer = custom_tokenizer(nlp)
+        nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
+        suffixes = {k: v for k, v in load_affixes().items() if k.startswith(AFFIXES_SUFFIX)}
+        affixes_matcher = AffixesMatcher(nlp, split_on=["VERB"], rules=suffixes)
+        nlp.add_pipe(affixes_matcher, name="affixes", first=True)
+        _load_pipeline[lang] = nlp
+    return _load_pipeline[lang]
