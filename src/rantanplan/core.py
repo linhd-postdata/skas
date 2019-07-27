@@ -14,11 +14,12 @@ from spacy.tokens import Doc
 
 from .alternative_syllabification import ALTERNATIVE_SYLLABIFICATION
 from .pipeline import load_pipeline
+from .rhymes import analyze_rhyme
 
 """
 Syllabification
 """
-nlp = load_pipeline('es_core_news_md')
+NLP = None
 accents_re = re.compile("[áéíóú]", re.I | re.U)
 paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$", re.I | re.U)  # checks if a str ends in unaccented vowel/N/S
 
@@ -287,18 +288,21 @@ def get_syllables(word_list):
     return syllabified_words
 
 
-def get_scansion(text):
+def get_scansion(text, rhyme_analysis=False):
     """
     Generates a list of dictionaries for each line
     :param text: Full text to be analyzed
+    :param rhyme_analysis: Specify if rhyme analysis is to be performed
     :return: list of dictionaries per line
     :rtype: list
     """
+    global NLP
     if isinstance(text, Doc):
         tokens = text
     else:
-        nlp = load_pipeline()
-        tokens = nlp(text)
+        if NLP is None:
+            NLP = load_pipeline()
+        tokens = NLP(text)
     seen_tokens = []
     lines = []
     for token in tokens:
@@ -309,4 +313,17 @@ def get_scansion(text):
             seen_tokens.append(token)
     if len(seen_tokens) > 0:
         lines.append({"tokens": get_syllables(seen_tokens)})
+    if rhyme_analysis:
+        for rhyme in analyze_rhyme(lines):
+            for index, line in enumerate(lines):
+                line["structure"] = rhyme["name"]
+                line["rhyme"] = rhyme["rhyme"][index]
+                line["ending"] = rhyme["endings"][index]
+                line["ending_stress"] = rhyme["endings_stress"][index]
+                if line["ending_stress"] == 0:
+                    line["rhyme_type"] = ""
+                    line["rhyme_relaxation"] = None
+                else:
+                    line["rhyme_type"] = rhyme["rhyme_type"]
+                    line["rhyme_relaxation"] = rhyme["rhyme_relaxation"]
     return lines

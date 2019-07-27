@@ -60,12 +60,14 @@ STRUCTURES = (
 )
 
 
-def get_stressed_endings(scansion):
+def get_stressed_endings(lines):
     """Return a list of word endings starting at the stressed position,
-    from a scansion list of tokens as input"""
+    from a scansion lines list of tokens as input"""
     endings = []
-    for line in scansion:
+    for line in lines:
         words = [word for word in line["tokens"] if "symbol" not in word]
+        # TODO: Use prosodic tokens and metrical pattern to
+        #       better account for syllable count
         syllables_count = sum(len(word["word"]) for word in words)
         last_word = words[-1]
         last_word_ending = last_word["word"][last_word["stress_position"]:]
@@ -87,6 +89,9 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     for stressed_ending, _, stressed_position in stressed_endings:
         stressed_ending_upper = stressed_ending[stressed_position].upper()
         stressed_ending[stressed_position] = stressed_ending_upper
+        # TODO: Other forms of relaxation should be tried iteratively, such as
+        # lava ~ naba, vaya ~ valla, ceceo ~ zezeo, Venus ~ menos,
+        # (also cases changing `i` for `e`), etc. 
         if relaxation:
             ending = "".join(WEAK_VOWELS_RE.sub(r"\1", syll, count=1)
                              for syll in stressed_ending)
@@ -142,7 +147,7 @@ def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
     return rhymes, endings
 
 
-def sort_rhyme_letters(rhymes, unrhymed_verse_symbol):
+def sort_rhyme_letters(rhymes, unrhymed_verse_symbol="-"):
     """Reorder rhyme letters so first rhyme is always an 'a'."""
     sorted_rhymes = []
     letters = {}
@@ -219,10 +224,10 @@ def search_structure_index(rhyme, syllables_count, structure_key):
             return index
 
 
-def analyze_rhyme(scansion, offset=4):
+def analyze_rhyme(lines, offset=4):
     """Analyze the syllables of a text to propose a possible set of
     rhyme structure, rhyme name, rhyme endings, and rhyme pattern"""
-    stressed_endings = get_stressed_endings(scansion)
+    stressed_endings = get_stressed_endings(lines)
     best_ranking = len(STRUCTURES)
     best_structure = None
     # Prefer consonance to assonance
@@ -248,4 +253,4 @@ def analyze_rhyme(scansion, offset=4):
                     "rhyme_relaxation": relaxation
                 }
     if best_structure is not None:
-        return best_structure["name"], best_structure
+        return best_structure
