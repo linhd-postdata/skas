@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 import statistics
 import string
@@ -38,7 +39,7 @@ STRUCTURES = (
         CONSONANT_RHYME,
         "couplet",
         r"aa",
-        lambda x: True
+        lambda _: True
     ), (
         ASSONANT_RHYME,
         "romance",
@@ -147,7 +148,7 @@ def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
     return rhymes, endings
 
 
-def sort_rhyme_letters(rhymes, unrhymed_verse_symbol="-"):
+def rhyme_codes_to_letters(rhymes, unrhymed_verse_symbol="-"):
     """Reorder rhyme letters so first rhyme is always an 'a'."""
     sorted_rhymes = []
     letters = {}
@@ -181,7 +182,7 @@ def split_stress(endings):
 
 
 def get_rhymes(stressed_endings, assonance=False, relaxation=False,
-               offset=None, unrhymed_verse_symbol="-"):
+               offset=None, unrhymed_verse_symbol=None):
     """From a list of syllables from the last stressed syllable of the ending
     word of each line (stressed_endings), return a tuple with two lists:
     - rhyme pattern of each line (e.g., a, b, b, a)
@@ -196,28 +197,32 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     number, effectively allowing rhymes that only occur between
     lines i and i + offset. The symbol for unrhymed verse can be set
     using unrhymed_verse_symbol (defaults to '-')"""
+    if unrhymed_verse_symbol is None:
+        unrhymed_verse_symbol = "-"
     # Get a numerical representation of rhymes using numbers and
     # identifying unrhymed verses
     codes, ending_codes, unrhymed_verses = get_clean_codes(
         stressed_endings, assonance, relaxation
     )
     # Get the actual rhymes and endings adjusting for unrhymed verses
-    unsorted_rhymes, endings = assign_letter_codes(
+    rhyme_codes, endings = assign_letter_codes(
         codes, ending_codes, unrhymed_verses, offset
     )
-    # Reorder rhyme letters so first rhyme is always an 'a'
-    rhymes = sort_rhyme_letters(unsorted_rhymes, unrhymed_verse_symbol)
+    # Assign and reorder rhyme letters so first rhyme is always an 'a'
+    rhymes = rhyme_codes_to_letters(rhyme_codes, unrhymed_verse_symbol)
     # Extract stress from endings
     stresses, unstressed_endings = split_stress(endings)
     return rhymes, unstressed_endings, stresses
 
 
-def search_structure_index(rhyme, syllables_count, structure_key):
+def search_structure(rhyme, syllables_count, structure_key, structures=None):
     """Search in stanza structures for a structure that matches assonance or
     consonance, a rhyme pattern, and a condition on the lengths of sylalbles
     of lines. For the first matching structure, its index in STRUCTURES will
-    be returned"""
-    for index, (key, _, structure, func) in enumerate(STRUCTURES):
+    be returned. An alternative STRUCTURES list can ba passed in structures."""
+    if structures is None:
+        structures = STRUCTURES
+    for index, (key, _, structure, func) in enumerate(structures):
         if (key == structure_key
                 and re.compile(structure).match(rhyme)
                 and func(syllables_count)):
@@ -239,8 +244,8 @@ def analyze_rhyme(lines, offset=4):
                 stressed_endings, assonance, relaxation, offset
             )
             rhyme = "".join(rhymes)
-            syllable_count = [count for _, count, _ in stressed_endings]
-            ranking = search_structure_index(rhyme, syllable_count, rhyme_type)
+            syllables_count = [count for _, count, _ in stressed_endings]
+            ranking = search_structure(rhyme, syllables_count, rhyme_type)
             if ranking is not None and ranking < best_ranking:
                 best_ranking = ranking
                 best_structure = {
