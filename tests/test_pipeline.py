@@ -18,7 +18,8 @@ def test_load_pipeline(monkeypatch):
         return spacy.blank('es')
 
     monkeypatch.setattr(spacy, 'load', mockreturn)
-    nlp = load_pipeline()
+    # lang doesn't matter as long as it hasn't been used in the test session
+    nlp = load_pipeline("blank")
     doc = nlp("prue-\nba")
     token_dict = []
     for token in doc:
