@@ -238,7 +238,7 @@ def analyze_rhyme(lines, offset=4):
     # Prefer consonance to assonance
     for assonance in (False, True):
         rhyme_type = ASSONANT_RHYME if assonance else CONSONANT_RHYME
-        # Prefer relaxation to stricness
+        # Prefer relaxation to strictness
         for relaxation in (True, False):
             rhymes, endings, endings_stress = get_rhymes(
                 stressed_endings, assonance, relaxation, offset

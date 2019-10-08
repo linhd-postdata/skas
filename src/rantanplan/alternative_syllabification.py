@@ -1,4 +1,85 @@
 """
+Exceptions for foreign words in Spanish that do not follow
+standard Spanish syllabification rules
+
+Example: "maître": "maî-tre"
+
+Words syllabification have been extracted from educalingo dict
+as there is no official resource on word syllabification
+https://educalingo.com/es/dic-es
+
+Some words were incorrectly syllabified and for this purpose DIRAE
+https://dirae.es/ and the FUNDEU https://www.fundeu.es/dudas/
+have been consulted to resolve these cases.
+"""
+
+SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
+    "aarónica": "aa-ró-ni-ca",
+    "aarónico": "aa-ró-ni-co",
+    "aaronita": "aa-ro-ni-ta",
+    "ampère": "am-pè-re",
+    "beethoveniano": "bee-tho-ve-nia-no",
+    "byroniana": "by-ro-nia-na",
+    "byroniano": "by-ro-nia-no",
+    "chiismo": "chi-is-mo",
+    "chiita": "chi-i-ta",
+    "christmas": "christ-mas",
+    "copyright": "co-py-right",
+    "curaçao": "cu-ra-ça-o",
+    "darwiniano": "dar-wi-nia-no",
+    "darwinismo": "dar-wi-nis-mo",
+    "darwinista": "dar-wi-nis-ta",
+    "dseda": "dse-da",
+    "duunvir": "du-un-vir",
+    "duunviral": "du-un-vi-ral",
+    "duunvirato": "du-un-vi-ra-to",
+    "duunviro": "du-un-vi-ro",
+    "emmenthal": "e-mmen-thal",
+    "hardware": "hard-ware",
+    "hollywoodiano": "holly-woo-dia-no",
+    "hollywoodiense": "ho-lly-woo-dien-se",
+    "maître": "maî-tre",
+    "neodarwinismo": "ne-o-dar-wi-nis-mo",
+    "neodarwinista": "ne-o-dar-wi-nis-ta",
+    "pajla": "paj-la",
+    "penthouse": "pent-house",
+    "première": "pre-miè-re",
+    "priismo": "pri-is-mo",
+    "priista": "pri-is-ta",
+    "rottweiler": "rott-wei-ler",
+    "sandwich": "sand-wich",
+    "sándwich": "sánd-wich",
+    "sandwichera": "sand-wi-che-ra",
+    "sandwichería": "sand-wi-che-rí-a",
+    "schnauzer": "sch-nau-zer",
+    "score": "s-core",
+    "shakesperiano": "sha-kes-pe-ria-no",
+    "shapra": "sha-pra",
+    "shaurire": "shau-ri-re",
+    "shawarma": "sha-war-ma",
+    "shekel": "she-kel",
+    "sherpa": "sher-pa",
+    "shute": "shu-te",
+    "singspiel": "sings-piel",
+    "snooker": "s-noo-ker",
+    "software": "soft-ware",
+    "spaghetti": "s-pa-ghe-ti",
+    "spinning": "s-pi-nning",
+    "srilanqués": "sri-lan-qués",
+    "staccato": "s-ta-cca-to",
+    "stage": "s-tage",
+    "standing": "s-tan-ding",
+    "starlette": "s-tar-le-tte",
+    "taekwondista": "ta-e-kwon-dis-ta",
+    "taekwondo": "ta-e-kwon-do",
+    "taylorismo": "tay-lo-ris-mo",
+    "tsunami": "tsu-na-mi",
+    "tzeltal": "tzel-tal",
+    "tzompantli": "tzom-pan-tli",
+    "whippet": "whip-pet",
+    "whiskería": "whis-ke-rí-a"}
+
+"""
 Phonetic exceptions dict for potential diaeresis
 
 paranoia': (['pa', 'ra', 'noia'], # Normative syllabification

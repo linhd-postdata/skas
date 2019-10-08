@@ -8,6 +8,7 @@
 # https://www.raco.cat/index.php/Elies/article/view/194843
 # http://elies.rediris.es/elies4/Fon2.htm
 # http://elies.rediris.es/elies4/Fon8.htm
+import copy
 import re
 
 from spacy.tokens import Doc
@@ -43,12 +44,12 @@ letter_clusters_re = re.compile(r"""
     ([aeiou][äëïöü])|
     #10: Explicit hiatus with umlaut vowels, second part
     ([äëïöü][a-z])|
-    #12: any char
+    #11: any char
     ([a-záéíóúñ])
 """, re.I | re.U | re.VERBOSE)  # re.VERBOSE is needed to be able to catch the regex group
 
 """
-Metrical Analysis
+Rhythmical Analysis
 """
 STRONG_VOWELS = set("aeoáéóÁÉÓAEO")
 WEAK_VOWELS = set("iuüíúIÍUÜÚ")
@@ -71,8 +72,11 @@ ABROG_RE = re.compile("^(ab)(rog[au].*)", re.I | re.U)
 # words starting with OBREP-
 OBREP_RE = re.compile("^(ob)(rep.*)", re.I | re.U)
 
-# words starting with prefixes SIN-/DES- followed by consonant "destituir", "sinhueso"
-PREFIXES_WITH_CONSONANT_RE = (re.compile("^(des|sin)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
+# words starting with prefixes SIN-/DES- followed by consonant "destituir"
+PREFIX_DES_WITH_CONSONANT_RE = (re.compile("^(des)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
+
+# words starting with prefixes SIN-/DES- followed by consonant "sinhueso"
+PREFIX_SIN_WITH_CONSONANT_RE = (re.compile("^(sin)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
 
 # words with prefix EN- followed by consonant: "entrampar", "abencerraje"
 PREFIX_EN_WITH_CONSONANT_RE = (re.compile("(.*?en)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
@@ -82,7 +86,7 @@ PREFIX_RNH_DIPTHONG_RE = (re.compile("(.*?r)(hu[aeioáéíó].*)", re.I | re.U))
 
 
 """
-Metrical Analysis functions
+Rhythmical Analysis functions
 """
 
 
@@ -98,12 +102,115 @@ def have_prosodic_liaison(first_syllable, second_syllable):
             and second_syllable['syllable'][0] in LIAISON_SECOND_PART)
 
 
+def get_synalephas(sinaeresis_words):
+    """
+    Gets a list of dictionaries for each word on each line of the poem
+    and joins the syllables to create phonologic syllables according to its
+    'has_synaloepha' value
+    :param sinaeresis_words: List of dictionaries for each word of the poem
+    :return: A list of conjoined syllables
+    """
+    prosodic_line = []
+    word_list = copy.deepcopy(sinaeresis_words)  # create a deepcopy since we're going to pop()
+    for idx, syllables_list in enumerate(word_list):
+        for syllable in syllables_list:
+            if not syllable.get('has_synalepha'):
+                prosodic_line.append(syllable)
+            else:
+                next_syllable = word_list[idx + 1].pop(0)
+                prosodic_line.append({
+                    'is_stressed': (syllable.get('is_stressed') or next_syllable.get('is_stressed')),
+                    'syllable': "".join([syllable.get('syllable'), next_syllable.get('syllable')]),
+                    'has_synalepha': True})
+    return prosodic_line
+
+
+def get_sinaeresis(words_dictionary):
+    """
+    Gets a list of dictionaries for each word on each line of the poem
+    and joins the syllables to create phonological syllables according to its
+    'has_sinaeresis' value
+    :param words_dictionary: List of dictionaries for each word of the poem
+    :return: A list of conjoined syllables
+    """
+    sinaeresis_words = words_dictionary[:]  # create a copy since we're going to pop()
+    phonological_syllables = []
+    for idx, key in enumerate(sinaeresis_words):
+        if not key.get('has_sinaeresis'):
+            phonological_syllables.append(sinaeresis_words[idx])
+        else:
+            next_syl = sinaeresis_words.pop(idx + 1)
+            phonological_syllables.append({
+                'is_stressed': (key['is_stressed'] or next_syl['is_stressed']),
+                'syllable': "".join([key['syllable'], next_syl['syllable']]),
+                'has_sinaeresis': True})
+    return phonological_syllables
+
+
+def get_rhythmical_pattern(line, rhythm_format="indexed"):
+    """
+    Gets a rhythm pattern for a poem in either "pattern": "-++-+-+-"
+    or "index": [1,2,4,6] format
+    :param line: a dictionary with the information of the poem
+    :param rhythm_format: The output format for the rhythm
+    :return: Dictionary with with rhythm and phonologic groups
+    """
+    rhythm_dict = {}
+    rhythmical_stress = ""
+    token_list = line['tokens']
+    sinaeresis_tokens = {'sinaeresis_tokens': []}
+    phonological_groups = {'phonological_groups': []}
+    for token in token_list:
+        if token.get('word'):
+            sinaeresis_tokens['sinaeresis_tokens'].append(get_sinaeresis(token.get('word')))
+    synalepha_token_list = get_synalephas(sinaeresis_tokens['sinaeresis_tokens'])
+    for token in synalepha_token_list:
+        if token.get('syllable'):
+            phonological_groups['phonological_groups'].append(token)
+    for syllable in synalepha_token_list:
+        if syllable['is_stressed']:
+            rhythmical_stress += '+'
+        else:
+            rhythmical_stress += '-'
+    last_word = sinaeresis_tokens['sinaeresis_tokens'][-1]
+    last_syllable_stress = last_word[-1].get('is_stressed')
+    if last_syllable_stress:
+        rhythmical_stress += '-'
+    elif len(last_word) >= 3:  # Proparoxytone
+        third_from_last_syllable_stress = last_word[-3].get('is_stressed')
+        if third_from_last_syllable_stress:
+            rhythmical_stress = rhythmical_stress[:-1]
+    elif len(last_word) > 3:  # Stress on preantepenultimate syllable
+        fourth_from_last_syllable_stress = last_word[-4].get('is_stressed')
+        if fourth_from_last_syllable_stress:
+            rhythmical_stress = rhythmical_stress[:-1]
+    if rhythm_format == 'indexed':
+        rhythm_dict = {
+            'rhythm': {
+                'rhythmical_stress': [
+                    match.start() for match in re.finditer(r'\+', rhythmical_stress)]},
+            'type': rhythm_format}
+    elif rhythm_format == 'pattern':
+        rhythm_dict = {
+            'rhythm': {
+                'rhythmical_stress': rhythmical_stress, 'type': rhythm_format}}
+    # Count the number of phonological tokens
+    rhythm_dict.update({'rhythmical_length': len(rhythmical_stress)})
+    return {**phonological_groups, **rhythm_dict}
+
+
 """
 Syllabifier functions
 """
 
 
 def apply_exception_rules(word):
+    """
+    Applies presyllabification rules to a word, based on Antonio Ríos Mestre's work
+    :param word: A string to be checked for exceptions
+    :return: A string with the presyllabified word
+    """
+    """
     # 'Abrogar' and derivatives
     if ABROG_RE.match(word):
         match = ABROG_RE.search(word)
@@ -119,9 +226,15 @@ def apply_exception_rules(word):
         match = PREFIX_EN_WITH_CONSONANT_RE.search(word)
         if match is not None:
             word = "-".join(match.groups())
+    # Prefix 'des' followed by consonant
+    if PREFIX_DES_WITH_CONSONANT_RE.match(word):
+        match = PREFIX_DES_WITH_CONSONANT_RE.search(word)
+        if match is not None:
+            word = "-".join(match.groups())
+    """
     # Prefix 'des'/'sin' followed by consonant
-    if PREFIXES_WITH_CONSONANT_RE.match(word):
-        match = PREFIXES_WITH_CONSONANT_RE.search(word)
+    if PREFIX_SIN_WITH_CONSONANT_RE.match(word):
+        match = PREFIX_SIN_WITH_CONSONANT_RE.search(word)
         if match is not None:
             word = "-".join(match.groups())
     # Group rh followed by u + dipthong
@@ -287,11 +400,12 @@ def get_syllables(word_list):
     return syllabified_words
 
 
-def get_scansion(text, rhyme_analysis=False):
+def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern"):
     """
     Generates a list of dictionaries for each line
     :param text: Full text to be analyzed
     :param rhyme_analysis: Specify if rhyme analysis is to be performed
+    :param rhythm_format: output format for rhythm analysis
     :return: list of dictionaries per line
     :rtype: list
     """
@@ -310,17 +424,21 @@ def get_scansion(text, rhyme_analysis=False):
             seen_tokens.append(token)
     if len(seen_tokens) > 0:
         lines.append({"tokens": get_syllables(seen_tokens)})
+    for line in lines:
+        line.update(get_rhythmical_pattern(line, rhythm_format))
     if rhyme_analysis:
-        for rhyme in analyze_rhyme(lines):
-            for index, line in enumerate(lines):
-                line["structure"] = rhyme["name"]
-                line["rhyme"] = rhyme["rhyme"][index]
-                line["ending"] = rhyme["endings"][index]
-                line["ending_stress"] = rhyme["endings_stress"][index]
-                if line["ending_stress"] == 0:
-                    line["rhyme_type"] = ""
-                    line["rhyme_relaxation"] = None
-                else:
-                    line["rhyme_type"] = rhyme["rhyme_type"]
-                    line["rhyme_relaxation"] = rhyme["rhyme_relaxation"]
+        analyzed_lines = analyze_rhyme(lines)
+        if analyzed_lines is not None:
+            for rhyme in [analyzed_lines]:
+                for index, line in enumerate(lines):
+                    line["structure"] = rhyme["name"]
+                    line["rhyme"] = rhyme["rhyme"][index]
+                    line["ending"] = rhyme["endings"][index]
+                    line["ending_stress"] = rhyme["endings_stress"][index]
+                    if line["ending_stress"] == 0:
+                        line["rhyme_type"] = ""
+                        line["rhyme_relaxation"] = None
+                    else:
+                        line["rhyme_type"] = rhyme["rhyme_type"]
+                        line["rhyme_relaxation"] = rhyme["rhyme_relaxation"]
     return lines
