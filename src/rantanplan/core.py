@@ -14,6 +14,7 @@ import re
 from spacy.tokens import Doc
 
 from .alternative_syllabification import ALTERNATIVE_SYLLABIFICATION
+from .alternative_syllabification import SYLLABIFICATOR_FOREIGN_WORDS_DICT
 from .pipeline import load_pipeline
 from .rhymes import analyze_rhyme
 
@@ -23,6 +24,14 @@ Syllabification
 accents_re = re.compile("[áéíóú]", re.I | re.U)
 paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$", re.I | re.U)  # checks if a str ends in unaccented vowel/N/S
 
+
+"""
+Regular expressions for spanish syllabification.
+For the 'tl' cluster we have decided to join the two letters
+because is the most common syllabification and the same that
+Perkins (http://sadowsky.cl/perkins.html), DIRAE (https://dirae.es/),
+and Educalingo (https://educalingo.com/es/dic-es) use.
+"""
 letter_clusters_re = re.compile(r"""
     # 1: weak vowels diphthong with h
     ([iuü]h[iuü])|
@@ -31,9 +40,9 @@ letter_clusters_re = re.compile(r"""
     # 3: closed vowels
     ([iuü]h[aáeéíoóú])|
     # 4: liquid and mute consonants (adds hyphen)
-    ([a-záéíóúñ](?:(?:[bcdfghjklmnñpqsvxyz][hlr])|(?:[bcdfghjklmnñpqrstvxyz][hr]))[aáeéiíoóuúü])|
+    ([a-záéíóúñ](?:(?:[bcdfghjklmnñpqstvy][hlr])|(?:[bcdfghjklmnñpqrstvy][hr])|(?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
     # 5: any char followed by liquid and mute consonant, exceptions for 'r+l' and 't+l'
-    ((?:(?:[bcdfghjklmnñpqsvxyz][hlr])|(?:[bcdfghjklmnñpqrstvxyz][hr]))[aáeéiíoóuúü])|
+    ((?:(?:[bcdfghjklmnñpqstvy][hlr])|(?:[bcdfghjklmnñpqrstvy][hr])|(?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
     # 6: non-liquid consonant (adds hyphen)
     ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúüï])|
     # 7: vowel group (adds hyphen)
@@ -66,24 +75,33 @@ Regular expressions and rules for syllabification exceptions
 
 """
 
-# words starting with ABROG-
-ABROG_RE = re.compile("^(ab)(rog[au].*)", re.I | re.U)
-
-# words starting with OBREP-
-OBREP_RE = re.compile("^(ob)(rep.*)", re.I | re.U)
-
-# words starting with prefixes SIN-/DES- followed by consonant "destituir"
+# Words starting with prefixes SIN-/DES- followed by consonant "destituir"
 PREFIX_DES_WITH_CONSONANT_RE = (re.compile("^(des)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
 
-# words starting with prefixes SIN-/DES- followed by consonant "sinhueso"
+# Words starting with prefixes SIN-/DES- followed by consonant "sinhueso"
 PREFIX_SIN_WITH_CONSONANT_RE = (re.compile("^(sin)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
 
-# words with prefix EN- followed by consonant: "entrampar", "abencerraje"
-PREFIX_EN_WITH_CONSONANT_RE = (re.compile("(.*?en)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
+# Group rh + u[aeiou] diphthongs : "marhuenda"
+PREFIX_RNH_DIPHTHONG_RE = (re.compile("(.*?r)(hu[aeioáéíó].*)", re.I | re.U))
 
-# group rh + u[aeiou] dipthongs : "marhuenda"
-PREFIX_RNH_DIPTHONG_RE = (re.compile("(.*?r)(hu[aeioáéíó].*)", re.I | re.U))
+# Group consonant+[hlr] with exceptions for ll
+CONSONANT_GROUP = (re.compile("(.*[hmnqsw])([hlr][aeiouáéíóú].*)", re.I | re.U))
+CONSONANT_GROUP_EXCEPTION_LL = (re.compile("(.*[hlmnqsw])([hr][aeiouáéíóú].*)", re.I | re.U))
+CONSONANT_GROUP_EXCEPTION_DL = (re.compile("(.*[d])([l][aeiouáéíóú].*)", re.I | re.U))
 
+# Group vowel+ w + vowel
+W_VOWEL_GROUP = (re.compile("(.*[aeiouáéíóú])(w[aeiouáéíóú].*)", re.I | re.U))
+
+# Post-syllabification exceptions for consonant clusters and diphthongs
+
+# Consonant cluster. Example: 'cneorácea'
+CONSONANT_CLUSTER_RE = (re.compile("(?:(.*-)|^)([mpgc])-([bcdfghjklmñnpqrstvwxyz][aeioáéíó].*)", re.I | re.U))
+
+# Lowering diphthong. Example: 'ahijador'
+LOWERING_DIPHTHONGS_WITH_H = (re.compile("(?:(.*-)|^)([aeo])-(h[iu](?![aeoiu]).*)", re.I | re.U))
+
+# Lowering diphthong. Example: 'abohetado'
+RAISING_DIPHTHONGS_WITH_H = (re.compile("(?:(.*-)|^)([iu])-(h[aeo].*)", re.I | re.U))
 
 """
 Rhythmical Analysis functions
@@ -210,20 +228,27 @@ def apply_exception_rules(word):
     :param word: A string to be checked for exceptions
     :return: A string with the presyllabified word
     """
-    """
-    # 'Abrogar' and derivatives
-    if ABROG_RE.match(word):
-        match = ABROG_RE.search(word)
+    # Vowel + w + vowel group
+    if W_VOWEL_GROUP.match(word):
+        match = W_VOWEL_GROUP.search(word)
         if match is not None:
             word = "-".join(match.groups())
-    # 'Obrepticio' and derivatives
-    if OBREP_RE.match(word):
-        match = OBREP_RE.search(word)
+    # Consonant groups with exceptions for LL and DL
+    if CONSONANT_GROUP.match(word):
+        match = CONSONANT_GROUP.search(word)
         if match is not None:
             word = "-".join(match.groups())
-    # Prefix 'en' followed by consonant
-    if PREFIX_EN_WITH_CONSONANT_RE.match(word):
-        match = PREFIX_EN_WITH_CONSONANT_RE.search(word)
+    if CONSONANT_GROUP_EXCEPTION_LL.match(word):
+        match = CONSONANT_GROUP_EXCEPTION_LL.search(word)
+        if match is not None:
+            word = "-".join(match.groups())
+    if CONSONANT_GROUP_EXCEPTION_DL.match(word):
+        match = CONSONANT_GROUP_EXCEPTION_DL.search(word)
+        if match is not None:
+            word = "-".join(match.groups())
+    # Prefix 'sin' followed by consonant
+    if PREFIX_SIN_WITH_CONSONANT_RE.match(word):
+        match = PREFIX_SIN_WITH_CONSONANT_RE.search(word)
         if match is not None:
             word = "-".join(match.groups())
     # Prefix 'des' followed by consonant
@@ -231,17 +256,26 @@ def apply_exception_rules(word):
         match = PREFIX_DES_WITH_CONSONANT_RE.search(word)
         if match is not None:
             word = "-".join(match.groups())
+    # Group rh followed by u + diphthong
+    if PREFIX_RNH_DIPHTHONG_RE.match(word):
+        match = PREFIX_RNH_DIPHTHONG_RE.search(word)
+        if match is not None:
+            word = "-".join(match.groups())
+    return word
+
+
+def apply_exception_rules_post(word):
     """
-    # Prefix 'des'/'sin' followed by consonant
-    if PREFIX_SIN_WITH_CONSONANT_RE.match(word):
-        match = PREFIX_SIN_WITH_CONSONANT_RE.search(word)
-        if match is not None:
-            word = "-".join(match.groups())
-    # Group rh followed by u + dipthong
-    if PREFIX_RNH_DIPTHONG_RE.match(word):
-        match = PREFIX_RNH_DIPTHONG_RE.search(word)
-        if match is not None:
-            word = "-".join(match.groups())
+    Applies presyllabification rules to a word, based on Antonio Ríos Mestre's work
+    :param word: A string to be checked for exceptions
+    :return: A string with the presyllabified word
+    """
+    if CONSONANT_CLUSTER_RE.match(word):
+        word = re.sub(CONSONANT_CLUSTER_RE, r'\1\2\3', word)
+    if LOWERING_DIPHTHONGS_WITH_H.match(word):
+        word = re.sub(LOWERING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
+    if RAISING_DIPHTHONGS_WITH_H.match(word):
+        word = re.sub(RAISING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
     return word
 
 
@@ -254,15 +288,20 @@ def syllabify(word):
     """
     output = ""
     original_word = word
-    word = apply_exception_rules(word)
-    while len(word) > 0:
-        output += word[0]
-        # Returns first matching pattern.
-        m = letter_clusters_re.search(word)
-        if m is not None:
-            # Adds hyphen to syllables if regex pattern is not 5, 8, 11
-            output += "-" if m.lastindex not in set([5, 8, 11]) else ""
-        word = word[1:]
+    # Checks if word exists on the foreign words dictionary
+    if word in SYLLABIFICATOR_FOREIGN_WORDS_DICT:
+        output = SYLLABIFICATOR_FOREIGN_WORDS_DICT[word]
+    else:
+        word = apply_exception_rules(word)
+        while len(word) > 0:
+            output += word[0]
+            # Returns first matching pattern.
+            m = letter_clusters_re.search(word)
+            if m is not None:
+                # Adds hyphen to syllables if regex pattern is not 5, 8, 11
+                output += "-" if m.lastindex not in set([5, 8, 11]) else ""
+            word = word[1:]
+        output = apply_exception_rules_post(output)
     # Remove empty elements created during syllabification
     output = list(filter(bool, output.split("-")))
     return output, ALTERNATIVE_SYLLABIFICATION.get(original_word, (None, ()))[1]
@@ -317,7 +356,8 @@ def get_word_stress(word, pos, tag):
     :param word: List of str representing syllables
     :param pos: PoS tag from spacy ("DET")
     :param tag: Extended PoS tag info from spacy ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
-    :return: Dict with [original syllab word, stressed syllab. word, negative index position of stressed syllable or 0 if not stressed]
+    :return: Dict with [original syllab word, stressed syllab. word, negative index position of stressed syllable or 0
+    if not stressed]
     :rtype: dict
     """
     syllable_list, _ = syllabify(word)

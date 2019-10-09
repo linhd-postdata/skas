@@ -100,7 +100,7 @@ def test_syllabify_exceptions_rh_dipthong():
 
 def test_syllabify_tl():
     word = "atlante"
-    output = ['at', 'lan', 'te']
+    output = ['a', 'tlan', 'te']
     assert syllabify(word)[0] == output
 
 

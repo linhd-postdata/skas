@@ -1,3 +1,5 @@
+from rantanplan.core import syllabify
+
 """
 Words syllabification have been extracted from educalingo dict
 as there is no official resource on word syllabification
@@ -106370,3 +106372,8 @@ DICT_TEST = {
     "zuzar": "zu-zar",
     "zuzo": "zu-zo",
     "zuzón": "zu-zón"}
+
+
+def test_syllabification_dictionary():
+    for key in DICT_TEST:
+        assert "-".join(syllabify(key)[0]) == DICT_TEST[key]
