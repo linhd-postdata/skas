@@ -24,6 +24,10 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "chiismo": "chi-is-mo",
     "chiita": "chi-i-ta",
     "christmas": "christ-mas",
+    "coihaiquina": "co-ihai-qui-na",
+    "coihaiquino": "co-ihai-qui-no",
+    "coihue": "coi-hue",
+    "coihué": "coi-hué",
     "copyright": "co-py-right",
     "curaçao": "cu-ra-ça-o",
     "darwiniano": "dar-wi-nia-no",
@@ -46,6 +50,7 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "première": "pre-miè-re",
     "priismo": "pri-is-mo",
     "priista": "pri-is-ta",
+    "puruhá": "pur-uhá",
     "rottweiler": "rott-wei-ler",
     "sandwich": "sand-wich",
     "sándwich": "sánd-wich",
@@ -77,7 +82,8 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "tzeltal": "tzel-tal",
     "tzompantli": "tzom-pan-tli",
     "whippet": "whip-pet",
-    "whiskería": "whis-ke-rí-a"}
+    "whiskería": "whis-ke-rí-a",
+    "yihad": "yi-had"}
 
 """
 Phonetic exceptions dict for potential diaeresis

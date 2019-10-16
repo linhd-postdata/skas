@@ -106,7 +106,7 @@ def test_syllabify_tl():
 
 def test_syllabify_group_1():
     word = "antihumano"
-    output = ['an', 'ti', 'hu', 'ma', 'no']
+    output = ['an', 'tihu', 'ma', 'no']
     assert syllabify(word)[0] == output
 
 

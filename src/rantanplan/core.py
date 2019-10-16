@@ -95,13 +95,19 @@ W_VOWEL_GROUP = (re.compile("(.*[aeiouáéíóú])(w[aeiouáéíóú].*)", re.I 
 # Post-syllabification exceptions for consonant clusters and diphthongs
 
 # Consonant cluster. Example: 'cneorácea'
-CONSONANT_CLUSTER_RE = (re.compile("(?:(.*-)|^)([mpgc])-([bcdfghjklmñnpqrstvwxyz][aeioáéíó].*)", re.I | re.U))
+CONSONANT_CLUSTER_RE = (re.compile(
+    "(?:(.*-)|^)([mpgc])-([bcdfghjklmñnpqrstvwxyz][aeioáéíó].*)", re.I | re.U))
 
 # Lowering diphthong. Example: 'ahijador'
-LOWERING_DIPHTHONGS_WITH_H = (re.compile("(?:(.*-)|^)([aeo])-(h[iu](?![aeoiu]).*)", re.I | re.U))
+LOWERING_DIPHTHONGS_WITH_H = (
+    re.compile(
+        "((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)([aeo])-(h[iu](?![aeoiuíúáéó]).*)", re.I | re.U))
 
-# Lowering diphthong. Example: 'abohetado'
-RAISING_DIPHTHONGS_WITH_H = (re.compile("(?:(.*-)|^)([iu])-(h[aeo].*)", re.I | re.U))
+# Lowering diphthong. Example: 'buhitiho'
+RAISING_DIPHTHONGS_WITH_H = (
+    re.compile(
+        "((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)([iu])-(h[aeiouáéó](?![aeoáéiuíú]).*)", re.I | re.U))
+
 
 """
 Rhythmical Analysis functions
@@ -270,12 +276,16 @@ def apply_exception_rules_post(word):
     :param word: A string to be checked for exceptions
     :return: A string with the presyllabified word
     """
-    if CONSONANT_CLUSTER_RE.match(word):
-        word = re.sub(CONSONANT_CLUSTER_RE, r'\1\2\3', word)
-    if LOWERING_DIPHTHONGS_WITH_H.match(word):
-        word = re.sub(LOWERING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
-    if RAISING_DIPHTHONGS_WITH_H.match(word):
-        word = re.sub(RAISING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
+    # We make one pass for every match found so we can perform several substitutions
+    if CONSONANT_CLUSTER_RE.search(word):
+        for match in CONSONANT_CLUSTER_RE.findall(word)[0]:
+            word = re.sub(CONSONANT_CLUSTER_RE, r'\1\2\3', word)
+    if LOWERING_DIPHTHONGS_WITH_H.search(word):
+        for match in LOWERING_DIPHTHONGS_WITH_H.findall(word)[0]:
+            word = re.sub(LOWERING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
+    if RAISING_DIPHTHONGS_WITH_H.search(word):
+        for match in RAISING_DIPHTHONGS_WITH_H.findall(word)[0]:
+            word = re.sub(RAISING_DIPHTHONGS_WITH_H, r'\1\2\3', word)
     return word
 
 
