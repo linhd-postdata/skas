@@ -20,6 +20,7 @@ CONSONANTS_RE = re.compile(fr'[{CONSONANTS}]+', re.U | re.I)
 INITIAL_CONSONANTS_RE = re.compile(fr'^[{CONSONANTS}]+', re.U | re.I)
 DIPHTHONG_H_RE = re.compile(fr'([{VOWELS}])h([{VOWELS}])', re.U | re.I)
 DIPHTHONG_Y_RE = re.compile(fr'([{VOWELS}])h?y([^{VOWELS}])', re.U | re.I)
+GROUP_GQ_RE = re.compile(fr'([qg])u([ei])', re.U | re.I)
 # Stanza structures where each tuple is defined as follows:
 # (
 #     CONSONANT_RHYME | ASSONANT_RHYME,
@@ -33,12 +34,17 @@ STRUCTURES = (
     (
         CONSONANT_RHYME,
         "sonnet",
-        r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2})",
-        lambda lengths: all(13 > length > 10 for length in lengths)
+        r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2}|[cde]{6})",
+        lambda lengths: all(14 > length > 9 for length in lengths)
     ), (
         CONSONANT_RHYME,
         "couplet",
         r"aa",
+        lambda _: True
+    ), (
+        CONSONANT_RHYME,
+        "lorcaic_octet",
+        r"(-a-b-a-b)",
         lambda _: True
     ), (
         ASSONANT_RHYME,
@@ -46,6 +52,11 @@ STRUCTURES = (
         r"((.b)+)|((.a)+)",
         lambda lengths: statistics.median(lengths) == 8
     ), (
+        ASSONANT_RHYME,
+        "romance arte mayor",
+        r"((.b)+)|((.a)+)",
+        lambda lengths: 11 <= statistics.median(lengths) <= 14
+     ), (
         ASSONANT_RHYME,
         "haiku",
         r".*",
@@ -60,26 +71,36 @@ STRUCTURES = (
     ),
 )
 
+STRUCTURES_LENGTH = {
+    "sonnet": 14 * [11],
+    "haiku": [5, 7, 5]
+}
+
 
 def get_stressed_endings(lines):
     """Return a list of word endings starting at the stressed position,
     from a scansion lines list of tokens as input"""
     endings = []
     for line in lines:
-        words = [word for word in line["tokens"] if "symbol" not in word]
-        # TODO: Use prosodic tokens and metrical pattern to
-        #       better account for syllable count
-        syllables_count = sum(len(word["word"]) for word in words)
-        last_word = words[-1]
-        last_word_ending = last_word["word"][last_word["stress_position"]:]
-        ending = [syllable["syllable"] for syllable in last_word_ending]
-        endings.append((ending, syllables_count, last_word["stress_position"]))
+        syllables = [phonological_group["syllable"]
+                     for phonological_group in line["phonological_groups"]]
+        syllables_count = len(syllables)
+        syllables_stresses = [syllable["is_stressed"]
+                              for syllable in line["phonological_groups"]]
+        inverted_stresses = syllables_stresses[::-1]
+        last_stress_index = (
+            len(inverted_stresses) - inverted_stresses.index(True) - 1
+        )
+        ending = syllables[last_stress_index:]
+        endings.append(
+            (ending, syllables_count, last_stress_index - syllables_count)
+        )
     return endings
 
 
 def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     """Clean syllables from stressed_endings depending on the rhyme kind,
-    assonance or consonant, and some relaxation of dipthongs for rhyming
+    assonance or consonant, and some relaxation of diphthongs for rhyming
     purposes. Stress is also marked by upper casing the corresponding
     syllable. The codes for the endings, the rhymes in numerical form, and
     a set with endings of possible unrhymed verses are returned."""
@@ -98,6 +119,7 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
                              for syll in stressed_ending)
         else:
             ending = "".join(stressed_ending)
+        ending = GROUP_GQ_RE.sub(r"\1\2", ending)
         ending = DIPHTHONG_Y_RE.sub(r"\1i\2", ending)
         if assonance:
             ending = CONSONANTS_RE.sub(r"", ending)
@@ -215,7 +237,7 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     return rhymes, unstressed_endings, stresses
 
 
-def search_structure(rhyme, syllables_count, structure_key, structures=None):
+def search_structure(rhyme, rhythmical_lengths, structure_key, structures=None):
     """Search in stanza structures for a structure that matches assonance or
     consonance, a rhyme pattern, and a condition on the lengths of sylalbles
     of lines. For the first matching structure, its index in STRUCTURES will
@@ -225,7 +247,7 @@ def search_structure(rhyme, syllables_count, structure_key, structures=None):
     for index, (key, _, structure, func) in enumerate(structures):
         if (key == structure_key
                 and re.compile(structure).match(rhyme)
-                and func(syllables_count)):
+                and func(rhythmical_lengths)):
             return index
 
 
@@ -244,8 +266,8 @@ def analyze_rhyme(lines, offset=4):
                 stressed_endings, assonance, relaxation, offset
             )
             rhyme = "".join(rhymes)
-            syllables_count = [count for _, count, _ in stressed_endings]
-            ranking = search_structure(rhyme, syllables_count, rhyme_type)
+            rhythmical_lengths = [line["rhythm"]["length"] for line in lines]
+            ranking = search_structure(rhyme, rhythmical_lengths, rhyme_type)
             if ranking is not None and ranking < best_ranking:
                 best_ranking = ranking
                 best_structure = {

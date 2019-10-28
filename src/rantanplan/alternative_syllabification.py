@@ -21,6 +21,12 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "beethoveniano": "bee-tho-ve-nia-no",
     "byroniana": "by-ro-nia-na",
     "byroniano": "by-ro-nia-no",
+    # Words coming from South American languages that do not follow
+    # traditional Spanish syllabification rules
+    "carhuacina": "car-hua-ci-na",
+    "carhuacino": "car-hua-ci-no",
+    "carhuacinas": "car-hua-ci-nas",
+    "carhuacinos": "car-hua-ci-nos",
     "chiismo": "chi-is-mo",
     "chiita": "chi-i-ta",
     "christmas": "christ-mas",
@@ -47,6 +53,8 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "neodarwinista": "ne-o-dar-wi-nis-ta",
     "pajla": "paj-la",
     "penthouse": "pent-house",
+    # Quechuan word with different syllabification
+    "pirhuín": "pir-huín",
     "première": "pre-miè-re",
     "priismo": "pri-is-mo",
     "priista": "pri-is-ta",
@@ -77,6 +85,7 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "starlette": "s-tar-le-tte",
     "taekwondista": "ta-e-kwon-dis-ta",
     "taekwondo": "ta-e-kwon-do",
+    "tarhui": "tar-hui",
     "taylorismo": "tay-lo-ris-mo",
     "tsunami": "tsu-na-mi",
     "tzeltal": "tzel-tal",
@@ -90,8 +99,8 @@ Phonetic exceptions dict for potential diaeresis
 
 paranoia': (['pa', 'ra', 'noia'], # Normative syllabification
          [
-         (['pa', 'ra', 'no', 'ia'], (2, 3)), # Items to mark as a metaplasm, if they are used
-         (['pa', 'ra', 'no', 'i', 'a'], (2, 3, 4))  # Another, fake, items to mark as a metaplasm
+         (['pa', 'ra', 'no', 'ia'], (2, 3)), # Items to mark as a metaplasm
+         (['pa', 'ra', 'no', 'i', 'a'], (2, 3, 4)) # Another example
         ]),
 """
 
@@ -391,7 +400,8 @@ ALTERNATIVE_SYLLABIFICATION = {
     'aunarás': (['au', 'na', 'rás'], [(['a', 'u', 'na', 'rás'], (0, 1))]),
     'aunaré': (['au', 'na', 'ré'], [(['a', 'u', 'na', 'ré'], (0, 1))]),
     'aunaréis': (['au', 'na', 'réis'], [(['a', 'u', 'na', 'réis'], (0, 1))]),
-    'aunaría': (['au', 'na', 'rí', 'a'], [(['a', 'u', 'na', 'rí', 'a'], (0, 1))]),
+    'aunaría': (['au', 'na', 'rí', 'a'],
+                [(['a', 'u', 'na', 'rí', 'a'], (0, 1))]),
     'aunaríais': (['au', 'na', 'rí', 'ais'],
                   [(['a', 'u', 'na', 'rí', 'ais'], (0, 1))]),
     'aunaríamos': (['au', 'na', 'rí', 'a', 'mos'],
@@ -446,7 +456,8 @@ ALTERNATIVE_SYLLABIFICATION = {
     'auparás': (['au', 'pa', 'rás'], [(['a', 'u', 'pa', 'rás'], (0, 1))]),
     'auparé': (['au', 'pa', 'ré'], [(['a', 'u', 'pa', 'ré'], (0, 1))]),
     'auparéis': (['au', 'pa', 'réis'], [(['a', 'u', 'pa', 'réis'], (0, 1))]),
-    'auparía': (['au', 'pa', 'rí', 'a'], [(['a', 'u', 'pa', 'rí', 'a'], (0, 1))]),
+    'auparía': (['au', 'pa', 'rí', 'a'],
+                [(['a', 'u', 'pa', 'rí', 'a'], (0, 1))]),
     'auparíais': (['au', 'pa', 'rí', 'ais'],
                   [(['a', 'u', 'pa', 'rí', 'ais'], (0, 1))]),
     'auparíamos': (['au', 'pa', 'rí', 'a', 'mos'],
@@ -594,6 +605,11 @@ ALTERNATIVE_SYLLABIFICATION = {
                     [(['con', 'trac', 'tu', 'al'], (2, 3))]),
     'conventual': (['con', 'ven', 'tual'],
                    [(['con', 'ven', 'tu', 'al'], (2, 3))]),
+    'criada': (['cria', 'da'], [(['cri', 'a', 'da'], (0, 1))]),
+    'criado': (['cria', 'do'], [(['cri', 'a', 'do'], (0, 1))]),
+    'criar': (['criar'], [(['cri', 'ar'], (0, 1))]),
+    'criamos': (['cria', 'mos'], [(['cri', 'a', 'mos'], (0, 1))]),
+    'crió': (['crió'], [(['cri', 'ó'], (0, 1))]),
     'criadilla': (['cria', 'di', 'lla'], [(['cri', 'a', 'di', 'lla'], (0, 1))]),
     'criadillas': (['cria', 'di', 'llas'],
                    [(['cri', 'a', 'di', 'llas'], (0, 1))]),
@@ -988,7 +1004,8 @@ ALTERNATIVE_SYLLABIFICATION = {
     'individual': (['in', 'di', 'vi', 'dual'],
                    [(['in', 'di', 'vi', 'du', 'al'], (3, 4))]),
     'individualmente': (['in', 'di', 'vi', 'dual', 'men', 'te'],
-                        [(['in', 'di', 'vi', 'du', 'al', 'men', 'te'], (3, 4))]),
+                        [(['in', 'di', 'vi', 'du', 'al', 'men', 'te'],
+                          (3, 4))]),
     'intelectual': (['in', 'te', 'lec', 'tual'],
                     [(['in', 'te', 'lec', 'tu', 'al'], (3, 4))]),
     'inusual': (['i', 'nu', 'sual'], [(['i', 'nu', 'su', 'al'], (2, 3))]),
@@ -1189,6 +1206,7 @@ ALTERNATIVE_SYLLABIFICATION = {
     'sexuado': (['se', 'xua', 'do'], [(['se', 'xu', 'a', 'do'], (1, 2))]),
     'sexuados': (['se', 'xua', 'dos'], [(['se', 'xu', 'a', 'dos'], (1, 2))]),
     'sexual': (['se', 'xual'], [(['se', 'xu', 'al'], (1, 2))]),
+    'suave': (['sua', 've'], [(['su', 'a', 've'], (0, 1))]),
     'televisual': (['te', 'le', 'vi', 'sual'],
                    [(['te', 'le', 'vi', 'su', 'al'], (3, 4))]),
     'textual': (['tex', 'tual'], [(['tex', 'tu', 'al'], (1, 2))]),

@@ -1,18 +1,44 @@
+import json
+from pathlib import Path
 from unittest import mock
 
+import pytest
 import spacy
 
 import rantanplan.core
+from rantanplan.core import apply_exception_rules_post
+from rantanplan.core import generate_liaison_positions
+from rantanplan.core import generate_phonological_groups
 from rantanplan.core import get_orthographic_accent
+from rantanplan.core import get_phonological_groups
 from rantanplan.core import get_scansion
-from rantanplan.core import get_syllables
+from rantanplan.core import get_syllables_word_end
 from rantanplan.core import get_word_stress
+from rantanplan.core import get_words
 from rantanplan.core import have_prosodic_liaison
 from rantanplan.core import is_paroxytone
 from rantanplan.core import spacy_tag_to_dict
 from rantanplan.core import syllabify
 
 nlp = spacy.load('es_core_news_md')
+
+
+@pytest.fixture
+def phonological_groups():
+    return json.loads(
+        Path("tests/fixtures/phonological_groups.json").read_text())
+
+
+@pytest.fixture
+def rhyme_analysis_sonnet():
+    return json.loads(
+        Path("tests/fixtures/rhyme_analysis_sonnet.json").read_text())
+
+
+@pytest.fixture
+def scansion_sonnet():
+    return json.loads(
+        Path("tests/fixtures/scansion_sonnet.json").read_text())
 
 
 class TokenMock(mock.MagicMock):
@@ -32,7 +58,8 @@ class TokenMock(mock.MagicMock):
 
 
 def test_get_scansion_spacy_doc(monkeypatch):
-    token = TokenMock(text="Agüita", i=0, is_punct=False, has_tmesis=False, line=1)
+    token = TokenMock(text="Agüita", i=0, is_punct=False, has_tmesis=False,
+                      line=1, pos_="NOUN")
 
     def mockreturn(lang=None):
         return lambda _: [
@@ -46,20 +73,32 @@ def test_get_scansion_spacy_doc(monkeypatch):
             {'word': [
                 {'syllable': 'A', 'is_stressed': False},
                 {'syllable': 'güi', 'is_stressed': True},
-                {'syllable': 'ta', 'is_stressed': False}],
-                'stress_position': -2}],
+                {'syllable': 'ta', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -2}
+        ],
             'phonological_groups': [
                 {'syllable': 'A', 'is_stressed': False},
                 {'syllable': 'güi', 'is_stressed': True},
-                {'syllable': 'ta', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '-+-', 'type': 'pattern'},
-            'rhythmical_length': 3}]
+                {'syllable': 'ta', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '-+-', 'type': 'pattern', 'length': 3}
+        }
+    ]
 
 
 def test_have_prosodic_liaison():
     first_syllable = {'syllable': 'ca', 'is_stressed': True}
     second_syllable = {'syllable': 'en', 'is_stressed': False}
     assert have_prosodic_liaison(first_syllable, second_syllable) is True
+
+
+def test_have_prosodic_liaison_second_syllable_y_with_vowel():
+    first_syllable = {'syllable': 'ca', 'is_stressed': True}
+    second_syllable = {'syllable': 'yen', 'is_stressed': False}
+    assert have_prosodic_liaison(first_syllable, second_syllable) is False
 
 
 def test_syllabify_exceptions_en():
@@ -89,12 +128,6 @@ def test_syllabify_exceptions_prefix_des_consonant():
 def test_syllabify_exceptions_prefix_sin_consonant():
     word = "sinhueso"
     output = ['sin', 'hue', 'so']
-    assert syllabify(word)[0] == output
-
-
-def test_syllabify_exceptions_rh_dipthong():
-    word = "marhuenda"
-    output = ['mar', 'huen', 'da']
     assert syllabify(word)[0] == output
 
 
@@ -190,22 +223,44 @@ def test_syllabify_umlaut_u_i_tilde():
 
 def test_syllabify_alternatives():
     word = "arcaizabas"
-    output = (['ar', 'cai', 'za', 'bas'],
-              [(['ar', 'ca', 'i', 'za', 'bas'], (1, 2))])
-    assert syllabify(word) == output
+    output = (['ar', 'ca', 'i', 'za', 'bas'], (1, 2))
+    assert syllabify(word, alternative_syllabification=True) == output
 
 
 def test_syllabify_alternatives_2():
     word = "puntual"
-    output = (['pun', 'tual'],
-              [(['pun', 'tu', 'al'], (1, 2))])
-    assert syllabify(word) == output
+    output = (['pun', 'tu', 'al'], (1, 2))
+    assert syllabify(word, alternative_syllabification=True) == output
 
 
 def test_get_orthographic_accent():
     syllable_list = ['plá', 'ta', 'no']
     output = 0
     assert get_orthographic_accent(syllable_list) == output
+
+
+def test_apply_exception_rules_post_hiatus_first_vowel():
+    syllabified_word = "hüe-co"
+    output = "hü-e-co"
+    assert apply_exception_rules_post(syllabified_word) == output
+
+
+def test_apply_exception_rules_post_consonant_cluster():
+    syllabified_word = "c-ne-o-rá-ce-a"
+    output = "cne-o-rá-ce-a"
+    assert apply_exception_rules_post(syllabified_word) == output
+
+
+def test_apply_exception_rules_post_raising_diphthong():
+    syllabified_word = "a-hi-ja-dor"
+    output = "ahi-ja-dor"
+    assert apply_exception_rules_post(syllabified_word) == output
+
+
+def test_apply_exception_rules_post_lowering_diphthong():
+    syllabified_word = "bu-hi-ti-ho"
+    output = "buhi-tiho"
+    assert apply_exception_rules_post(syllabified_word) == output
 
 
 def test_get_orthographic_accent_with_no_tilde():
@@ -246,7 +301,21 @@ def test_get_word_stress():
         'word': [
             {'syllable': 'plá', 'is_stressed': True},
             {'syllable': 'ta', 'is_stressed': False},
-            {'syllable': 'no', 'is_stressed': False}], 'stress_position': -3}
+            {'syllable': 'no', 'is_stressed': False}
+        ], 'stress_position': -3}
+    assert get_word_stress(word, pos, tag) == output
+
+
+def test_get_word_stress_unstressed():
+    word = "platano"
+    pos = "DET"
+    tag = {'Gender': 'Masc', 'Number': 'Sing'}
+    output = {
+        'word': [
+            {'syllable': 'pla', 'is_stressed': False},
+            {'syllable': 'ta', 'is_stressed': False},
+            {'syllable': 'no', 'is_stressed': False}
+        ], 'stress_position': 0}
     assert get_word_stress(word, pos, tag) == output
 
 
@@ -256,7 +325,8 @@ def test_get_word_stress_stressed_monosyllables_without_tilde():
     tag = {'Case': 'Nom', 'Number': 'Sing', 'Person': '1', 'PronType': 'Prs'}
     output = {
         'word': [
-            {'syllable': 'yo', 'is_stressed': True}],
+            {'syllable': 'yo', 'is_stressed': True}
+        ],
         'stress_position': -1}
     assert get_word_stress(word, pos, tag) == output
 
@@ -264,10 +334,12 @@ def test_get_word_stress_stressed_monosyllables_without_tilde():
 def test_get_word_stress_unstressed_monosyllables_without_tilde():
     word = "mi"
     pos = "DET"
-    tag = {'Number': 'Sing', 'Number[psor]': 'Sing', 'Person': '1', 'Poss': 'Yes', 'PronType': 'Prs'}
+    tag = {'Number': 'Sing', 'Number[psor]': 'Sing', 'Person': '1',
+           'Poss': 'Yes', 'PronType': 'Prs'}
     output = {
         'word': [
-            {'syllable': 'mi', 'is_stressed': False}],
+            {'syllable': 'mi', 'is_stressed': False}
+        ],
         'stress_position': 0}
     assert get_word_stress(word, pos, tag) == output
 
@@ -279,7 +351,8 @@ def test_get_word_stress_no_tilde():
     output = {
         'word': [
             {'syllable': 'cam', 'is_stressed': True},
-            {'syllable': 'po', 'is_stressed': False}],
+            {'syllable': 'po', 'is_stressed': False}
+        ],
         'stress_position': -2}
     assert get_word_stress(word, pos, tag) == output
 
@@ -291,196 +364,78 @@ def test_get_word_stress_oxytone():
     output = {
         'word': [
             {'syllable': 'tam', 'is_stressed': False},
-            {'syllable': 'bor', 'is_stressed': True}],
+            {'syllable': 'bor', 'is_stressed': True}
+        ],
         'stress_position': -1}
     assert get_word_stress(word, pos, tag) == output
 
 
-def test_get_syllables():
+def test_get_words():
     word = nlp('físico-químico')
     output = [
         {
             'word': [
-                {'syllable': 'fí', 'is_stressed': True}, {'syllable': 'si', 'is_stressed': False},
-                {'syllable': 'co', 'is_stressed': False}], 'stress_position': -3}, {'symbol': '-'}, {
+                {'syllable': 'fí', 'is_stressed': True},
+                {'syllable': 'si', 'is_stressed': False},
+                {'syllable': 'co', 'is_stressed': False}
+            ], 'stress_position': -3}, {'symbol': '-'}, {
             'word': [
-                {'syllable': 'quí', 'is_stressed': True}, {'syllable': 'mi', 'is_stressed': False},
-                {'syllable': 'co', 'is_stressed': False}], 'stress_position': -3}]
-    assert get_syllables(word) == output
+                {'syllable': 'quí', 'is_stressed': True},
+                {'syllable': 'mi', 'is_stressed': False},
+                {'syllable': 'co', 'is_stressed': False}
+            ], 'stress_position': -3}
+    ]
+    assert get_words(word) == output
 
 
-def test_get_scansion():
+def test_get_scansion_spacy_doc_text():
+    text = nlp("patata")
+    output = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'pa', 'is_stressed': False},
+                {'syllable': 'ta', 'is_stressed': True},
+                {'syllable': 'ta', 'is_stressed': False, 'is_word_end': True}
+            ],
+                'stress_position': -2}
+        ],
+            'phonological_groups': [
+                {'syllable': 'pa', 'is_stressed': False},
+                {'syllable': 'ta', 'is_stressed': True},
+                {'syllable': 'ta', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '-+-', 'type': 'pattern', 'length': 3}
+        }
+    ]
+    assert get_scansion(text) == output
+
+
+def test_get_scansion_rhyme_analysis(rhyme_analysis_sonnet):
+    text = """Cruel amor, ¿tan fieras sinrazones
+    tras tanta confusión, tras pena tanta?
+    ¿De qué sirve la argolla a la garganta
+    a quién jamás huyó de sus prisiones?
+    ¿Hierro por premio das a mis pasiones?
+    Dueño cruel, tu sinrazón espanta,
+    el castigo a la pena se adelanta
+    y cuando sirvo bien hierros me pones.
+    ¡Gentil laurel, amor; buenos despojos!
+    Y en un sujeto a tus mudanzas firme
+    hierro, virote, lágrimas y enojos.
+    Mas pienso que has querido persuadirme
+    que trayendo los hierros a los ojos
+    no pueda de la causa arrepentirme."""
+    assert get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
+
+
+def test_get_scansion(scansion_sonnet):
     text = """Siempre en octubre comenzaba el año.
     ¡Y cuántas veces esa luz de otoño
     me recordó a Fray Luis:
     «Ya el tiempo nos convida
     A los estudios nobles...»!"""
-    output = [
-        {'tokens': [
-            {'word': [
-                {'syllable': 'Siem', 'is_stressed': True},
-                {'syllable': 'pre', 'is_stressed': False, 'has_synalepha': True}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'en', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'oc', 'is_stressed': False},
-                {'syllable': 'tu', 'is_stressed': True},
-                {'syllable': 'bre', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'co', 'is_stressed': False},
-                {'syllable': 'men', 'is_stressed': False},
-                {'syllable': 'za', 'is_stressed': True},
-                {'syllable': 'ba', 'is_stressed': False, 'has_synalepha': True}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'el', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'a', 'is_stressed': True},
-                {'syllable': 'ño', 'is_stressed': False}],
-                'stress_position': -2},
-            {'symbol': '.'}],
-            'phonological_groups': [
-                {'syllable': 'Siem', 'is_stressed': True},
-                {'is_stressed': False, 'syllable': 'preen', 'has_synalepha': True},
-                {'syllable': 'oc', 'is_stressed': False},
-                {'syllable': 'tu', 'is_stressed': True},
-                {'syllable': 'bre', 'is_stressed': False},
-                {'syllable': 'co', 'is_stressed': False},
-                {'syllable': 'men', 'is_stressed': False},
-                {'syllable': 'za', 'is_stressed': True},
-                {'is_stressed': False, 'syllable': 'bael', 'has_synalepha': True},
-                {'syllable': 'a', 'is_stressed': True},
-                {'syllable': 'ño', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '+--+---+-+-', 'type': 'pattern'},
-            'rhythmical_length': 11},
-        {'tokens': [
-            {'symbol': '¡'},
-            {'word': [
-                {'syllable': 'Y', 'is_stressed': True}], 'stress_position': -1},
-            {'word': [
-                {'syllable': 'cuán', 'is_stressed': True},
-                {'syllable': 'tas', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 've', 'is_stressed': True},
-                {'syllable': 'ces', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'e', 'is_stressed': True},
-                {'syllable': 'sa', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'luz', 'is_stressed': True}], 'stress_position': -1},
-            {'word': [
-                {'syllable': 'de', 'is_stressed': False, 'has_synalepha': True}],
-                'stress_position': 0},
-            {'word': [
-                {'syllable': 'o', 'is_stressed': False},
-                {'syllable': 'to', 'is_stressed': True},
-                {'syllable': 'ño', 'is_stressed': False}],
-                'stress_position': -2}],
-            'phonological_groups': [
-                {'syllable': 'Y', 'is_stressed': True},
-                {'syllable': 'cuán', 'is_stressed': True},
-                {'syllable': 'tas', 'is_stressed': False},
-                {'syllable': 've', 'is_stressed': True},
-                {'syllable': 'ces', 'is_stressed': False},
-                {'syllable': 'e', 'is_stressed': True},
-                {'syllable': 'sa', 'is_stressed': False},
-                {'syllable': 'luz', 'is_stressed': True},
-                {'is_stressed': False, 'syllable': 'deo', 'has_synalepha': True},
-                {'syllable': 'to', 'is_stressed': True},
-                {'syllable': 'ño', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '++-+-+-+-+-', 'type': 'pattern'},
-            'rhythmical_length': 11},
-        {'tokens': [
-            {'word': [
-                {'syllable': 'me', 'is_stressed': False}],
-                'stress_position': 0},
-            {'word': [
-                {'syllable': 're', 'is_stressed': False},
-                {'syllable': 'cor', 'is_stressed': False},
-                {'syllable': 'dó', 'is_stressed': True, 'has_synalepha': True}],
-                'stress_position': -1},
-            {'word': [
-                {'syllable': 'a', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'Fray', 'is_stressed': True}],
-                'stress_position': -1},
-            {'word': [
-                {'syllable': 'Luis', 'is_stressed': True}],
-                'stress_position': -1},
-            {'symbol': ':'}],
-            'phonological_groups': [
-                {'syllable': 'me', 'is_stressed': False},
-                {'syllable': 're', 'is_stressed': False},
-                {'syllable': 'cor', 'is_stressed': False},
-                {'is_stressed': True, 'syllable': 'dóa', 'has_synalepha': True},
-                {'syllable': 'Fray', 'is_stressed': True},
-                {'syllable': 'Luis', 'is_stressed': True}],
-            'rhythm': {'rhythmical_stress': '---+++-', 'type': 'pattern'},
-            'rhythmical_length': 7},
-        {'tokens': [
-            {'symbol': '«'},
-            {'word': [
-                {'syllable': 'Ya', 'is_stressed': True, 'has_synalepha': True}],
-                'stress_position': -1},
-            {'word': [
-                {'syllable': 'el', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'tiem', 'is_stressed': True},
-                {'syllable': 'po', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'nos', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'con', 'is_stressed': False},
-                {'syllable': 'vi', 'is_stressed': True},
-                {'syllable': 'da', 'is_stressed': False}],
-                'stress_position': -2}],
-            'phonological_groups': [
-                {'is_stressed': True,
-                 'syllable': 'Yael',
-                 'has_synalepha': True},
-                {'syllable': 'tiem', 'is_stressed': True},
-                {'syllable': 'po', 'is_stressed': False},
-                {'syllable': 'nos', 'is_stressed': False},
-                {'syllable': 'con', 'is_stressed': False},
-                {'syllable': 'vi', 'is_stressed': True},
-                {'syllable': 'da', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '++---+-', 'type': 'pattern'},
-            'rhythmical_length': 7},
-        {'tokens': [
-            {'word': [
-                {'syllable': 'A', 'is_stressed': False}],
-                'stress_position': 0},
-            {'word': [
-                {'syllable': 'los', 'is_stressed': False}], 'stress_position': 0},
-            {'word': [
-                {'syllable': 'es', 'is_stressed': False},
-                {'syllable': 'tu', 'is_stressed': True},
-                {'syllable': 'dios', 'is_stressed': False}],
-                'stress_position': -2},
-            {'word': [
-                {'syllable': 'no', 'is_stressed': True},
-                {'syllable': 'bles', 'is_stressed': False}],
-                'stress_position': -2},
-            {'symbol': '...'},
-            {'symbol': '»'},
-            {'symbol': '!'}],
-            'phonological_groups': [
-                {'syllable': 'A', 'is_stressed': False},
-                {'syllable': 'los', 'is_stressed': False},
-                {'syllable': 'es', 'is_stressed': False},
-                {'syllable': 'tu', 'is_stressed': True},
-                {'syllable': 'dios', 'is_stressed': False},
-                {'syllable': 'no', 'is_stressed': True},
-                {'syllable': 'bles', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '---+-+-', 'type': 'pattern'},
-            'rhythmical_length': 7}]
-    assert get_scansion(text, rhythm_format="pattern") == output
+    assert get_scansion(text, rhythm_format="pattern") == scansion_sonnet
 
 
 def test_get_scansion_stressed_last_syl():
@@ -490,14 +445,19 @@ def test_get_scansion_stressed_last_syl():
             {'word': [
                 {'syllable': 'al', 'is_stressed': False},
                 {'syllable': 'ta', 'is_stressed': False},
-                {'syllable': 'voz', 'is_stressed': True}],
-                'stress_position': -1}],
+                {'syllable': 'voz', 'is_stressed': True,
+                 'is_word_end': True}
+            ],
+                'stress_position': -1}
+        ],
             'phonological_groups': [
                 {'syllable': 'al', 'is_stressed': False},
                 {'syllable': 'ta', 'is_stressed': False},
-                {'syllable': 'voz', 'is_stressed': True}],
-            'rhythm': {'rhythmical_stress': '--+-', 'type': 'pattern'},
-            'rhythmical_length': 4}]
+                {'syllable': 'voz', 'is_stressed': True,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '--+-', 'type': 'pattern', 'length': 4}}
+    ]
     assert get_scansion(text, rhythm_format="pattern") == output
 
 
@@ -508,15 +468,19 @@ def test_get_scansion_stressed_last_syl_index_metrical_pattern():
             {'word': [
                 {'syllable': 'al', 'is_stressed': False},
                 {'syllable': 'ta', 'is_stressed': False},
-                {'syllable': 'voz', 'is_stressed': True}],
-                'stress_position': -1}],
+                {'syllable': 'voz', 'is_stressed': True,
+                 'is_word_end': True}
+            ],
+                'stress_position': -1}
+        ],
             'phonological_groups': [
                 {'syllable': 'al', 'is_stressed': False},
                 {'syllable': 'ta', 'is_stressed': False},
-                {'syllable': 'voz', 'is_stressed': True}],
-            'rhythm': {'rhythmical_stress': [2]},
-            'type': 'indexed',
-            'rhythmical_length': 4}]
+                {'syllable': 'voz', 'is_stressed': True,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '3', 'type': 'indexed', 'length': 4}}
+    ]
     assert get_scansion(text, rhythm_format="indexed") == output
 
 
@@ -526,14 +490,22 @@ def test_get_scansion_sinaeresis():
         {'tokens': [
             {'word': [
                 {'syllable': 'hé', 'is_stressed': True},
-                {'syllable': 'ro', 'is_stressed': False, 'has_sinaeresis': True},
-                {'syllable': 'e', 'is_stressed': False}],
-                'stress_position': -3}],
+                {'syllable': 'ro', 'is_stressed': False,
+                 'has_sinaeresis': True},
+                {'syllable': 'e', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3}
+        ],
             'phonological_groups': [
                 {'syllable': 'hé', 'is_stressed': True},
-                {'is_stressed': False, 'syllable': 'roe', 'has_sinaeresis': True}],
-            'rhythm': {'rhythmical_stress': '+-', 'type': 'pattern'},
-            'rhythmical_length': 2}]
+                {'syllable': 'roe',
+                 'is_stressed': False,
+                 'sinaeresis_index': [1],
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '+-', 'type': 'pattern', 'length': 2}}
+    ]
     assert get_scansion(text, rhythm_format="pattern") == output
 
 
@@ -546,16 +518,21 @@ def test_get_scansion_affixes():
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'syllable': 'mo', 'is_stressed': False}],
-                'stress_position': -3}],
+                {'syllable': 'mo', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3}
+        ],
             'phonological_groups': [
                 {'syllable': 'an', 'is_stressed': False},
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'syllable': 'mo', 'is_stressed': False}],
-            'rhythm': {'rhythmical_stress': '--+-', 'type': 'pattern'},
-            'rhythmical_length': 4}]
+                {'syllable': 'mo', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '--+-', 'type': 'pattern', 'length': 4}}
+    ]
     assert get_scansion(text, rhythm_format="pattern") == output
 
 
@@ -568,22 +545,35 @@ def test_get_scansion_sinaeresis_synalepha_affixes():
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'syllable': 'mo', 'is_stressed': False, 'has_synalepha': True}],
+                {'syllable': 'mo',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}
+            ],
                 'stress_position': -3},
             {'word': [
                 {'syllable': 'hé', 'is_stressed': True},
-                {'syllable': 'ro', 'is_stressed': False, 'has_sinaeresis': True},
-                {'syllable': 'e', 'is_stressed': False}],
-                'stress_position': -3}],
+                {'syllable': 'ro', 'is_stressed': False,
+                 'has_sinaeresis': True},
+                {'syllable': 'e', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3}
+        ],
             'phonological_groups': [
                 {'syllable': 'an', 'is_stressed': False},
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'is_stressed': True, 'syllable': 'mohé', 'has_synalepha': True},
-                {'is_stressed': False, 'syllable': 'roe', 'has_sinaeresis': True}],
-            'rhythm': {'rhythmical_stress': '--+-+-', 'type': 'pattern'},
-            'rhythmical_length': 6}]
+                {'syllable': 'mohé', 'is_stressed': True,
+                 'synalepha_index': [1]},
+                {'syllable': 'roe',
+                 'is_stressed': False,
+                 'sinaeresis_index': [1],
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '--+-+-', 'type': 'pattern', 'length': 6}}
+    ]
     assert get_scansion(text, rhythm_format="pattern") == output
 
 
@@ -596,32 +586,326 @@ def test_get_scansion_sinaeresis_synalepha_affixes_index_metrical_pattern():
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'syllable': 'mo', 'is_stressed': False, 'has_synalepha': True}],
+                {'syllable': 'mo',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}
+            ],
                 'stress_position': -3},
             {'word': [
                 {'syllable': 'hé', 'is_stressed': True},
-                {'syllable': 'ro', 'is_stressed': False, 'has_sinaeresis': True},
-                {'syllable': 'e', 'is_stressed': False}],
-                'stress_position': -3}],
+                {'syllable': 'ro', 'is_stressed': False,
+                 'has_sinaeresis': True},
+                {'syllable': 'e', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3}
+        ],
             'phonological_groups': [
                 {'syllable': 'an', 'is_stressed': False},
                 {'syllable': 'ti', 'is_stressed': False},
                 {'syllable': 'quí', 'is_stressed': True},
                 {'syllable': 'si', 'is_stressed': False},
-                {'is_stressed': True, 'syllable': 'mohé', 'has_synalepha': True},
-                {'is_stressed': False, 'syllable': 'roe', 'has_sinaeresis': True}],
-            'rhythm': {'rhythmical_stress': [2, 4]},
-            'type': 'indexed',
-            'rhythmical_length': 6}]
+                {'syllable': 'mohé', 'is_stressed': True,
+                 'synalepha_index': [1]},
+                {'syllable': 'roe',
+                 'is_stressed': False,
+                 'sinaeresis_index': [1],
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '3-5', 'type': 'indexed', 'length': 6}}
+    ]
     assert get_scansion(text, rhythm_format="indexed") == output
+
+
+def test_get_scansion_sinaeresis_synalepha_affixes_binary_metrical_pattern():
+    text = "antiquísimo héroe"
+    output = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'an', 'is_stressed': False},
+                {'syllable': 'ti', 'is_stressed': False},
+                {'syllable': 'quí', 'is_stressed': True},
+                {'syllable': 'si', 'is_stressed': False},
+                {'syllable': 'mo',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3},
+            {'word': [
+                {'syllable': 'hé', 'is_stressed': True},
+                {'syllable': 'ro', 'is_stressed': False,
+                 'has_sinaeresis': True},
+                {'syllable': 'e', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+                'stress_position': -3}
+        ],
+            'phonological_groups': [
+                {'syllable': 'an', 'is_stressed': False},
+                {'syllable': 'ti', 'is_stressed': False},
+                {'syllable': 'quí', 'is_stressed': True},
+                {'syllable': 'si', 'is_stressed': False},
+                {'syllable': 'mohé', 'is_stressed': True,
+                 'synalepha_index': [1]},
+                {'syllable': 'roe',
+                 'is_stressed': False,
+                 'sinaeresis_index': [1],
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '001010', 'type': 'binary', 'length': 6}}
+    ]
+    assert get_scansion(text, rhythm_format="binary") == output
 
 
 def test_spacy_tag_to_dict():
     tag = "DET__Number=Sing|Number[psor]=Sing|Person=1|Poss=Yes|PronType=Prs"
-    output = {'DET__Number': 'Sing', 'Number[psor]': 'Sing', 'Person': '1', 'Poss': 'Yes', 'PronType': 'Prs'}
+    output = {'DET__Number': 'Sing', 'Number[psor]': 'Sing', 'Person': '1',
+              'Poss': 'Yes', 'PronType': 'Prs'}
     assert spacy_tag_to_dict(tag) == output
 
 
 def test_spacy_tag_to_dict_no_tags():
     tag = "DET___"
     assert spacy_tag_to_dict(tag) == {}
+
+
+def test_get_syllables_word_end():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    words = [
+        {'word': [
+            {'syllable': 'tu', 'is_stressed': False},
+            {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': True}
+        ],
+            'stress_position': -1},
+        {'word': [
+            {'syllable': 'a', 'is_stressed': False, 'has_synalepha': True}
+        ],
+            'stress_position': 0},
+        {'word': [
+            {'syllable': 'un', 'is_stressed': True}
+        ],
+            'stress_position': -1},
+        {'word': [
+            {'syllable': 'Du', 'is_stressed': True},
+            {'syllable': 'que', 'is_stressed': False}
+        ],
+            'stress_position': -2}
+    ]
+    assert get_syllables_word_end(words) == output
+
+
+def test_get_phonological_groups_synalephas():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'llóaun', 'is_stressed': True,
+         'synalepha_index': [2, 3], 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(words) == output
+
+
+def test_get_phonological_groups_synalepha():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'llóaun', 'is_stressed': True,
+         'synalepha_index': [2]},
+        {'syllable': 'que', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'yo', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'aun', 'is_stressed': False},
+        {'syllable': 'que', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'yo', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(words) == output
+
+
+def test_get_phonological_groups_no_synalepha():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(words) == output
+
+
+def test_get_phonological_groups_sinaeresis():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': False,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Dua', 'is_stressed': True,
+         'sinaeresis_index': [1]},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': False,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': True},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(words, liaison_type="sinaeresis") == output
+
+
+def test_get_phonological_groups_no_sinaeresis():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'is_word_end': True,
+         'has_synalepha': False},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': False},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': False,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': False},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(words, liaison_type="sinaeresis") == output
+
+
+def test_get_phonological_groups_no_synalepha_no_sinaeresis():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'is_word_end': True,
+         'has_synalepha': False},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': False},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': False,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': False},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(
+        get_phonological_groups(words, liaison_type="sinaeresis")
+    ) == output
+
+
+def test_get_phonological_groups_synalepha_sinaeresis():
+    output = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'llóaun', 'is_stressed': True, 'is_word_end': True,
+         'synalepha_index': [2, 3]},
+        {'syllable': 'Dua', 'is_stressed': True, 'sinaeresis_index': [1]},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True}
+    ]
+    words = [
+        {'syllable': 'tu', 'is_stressed': False},
+        {'syllable': 'lló', 'is_stressed': True, 'has_synalepha': True,
+         'is_word_end': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True,
+         'has_synalepha': True},
+        {'syllable': 'un', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'Du', 'is_stressed': True, 'has_sinaeresis': True},
+        {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'que', 'is_stressed': False, 'is_word_end': True},
+    ]
+    assert get_phonological_groups(
+        get_phonological_groups(words, liaison_type="sinaeresis")
+    ) == output
+
+
+def test_generate_phonological_groups(phonological_groups):
+    tokens = nlp("el perro hace aguas")
+    assert list(generate_phonological_groups(tokens)) == phonological_groups
+
+
+def test_generate_liaison_positions_synalepha():
+    syllables = [
+        {'syllable': 'el', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'pe', 'is_stressed': True},
+        {'syllable': 'rro', 'is_stressed': False, 'has_synalepha': True,
+         'is_word_end': True}, {'syllable': 'ha', 'is_stressed': True},
+        {'syllable': 'ce', 'is_stressed': False, 'has_synalepha': True,
+         'is_word_end': True}, {'syllable': 'a', 'is_stressed': True},
+        {'syllable': 'guas', 'is_stressed': False, 'is_word_end': True}
+    ]
+    output = [
+        [0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0]
+    ]
+    assert list(
+        generate_liaison_positions(syllables, liaison="synalepha")) == output
+
+
+def test_generate_liaison_positions_sinaeresis():
+    syllables = [
+        {'syllable': 'ha', 'is_stressed': False},
+        {'syllable': 'cí', 'is_stressed': True, 'has_sinaeresis': True},
+        {'syllable': 'a', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'mu', 'is_stressed': True},
+        {'syllable': 'chas', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'ca', 'is_stressed': False, 'has_sinaeresis': True},
+        {'syllable': 'í', 'is_stressed': True},
+        {'syllable': 'das', 'is_stressed': False, 'is_word_end': True}
+    ]
+    output = [
+        [0, 1, 0, 0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0]
+    ]
+    assert list(
+        generate_liaison_positions(syllables, liaison="sinaeresis")) == output
