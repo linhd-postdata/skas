@@ -6,12 +6,18 @@ import pytest
 import spacy
 
 import rantanplan.core
+from rantanplan.core import apply_exception_rules
 from rantanplan.core import apply_exception_rules_post
+from rantanplan.core import clean_phonological_groups
+from rantanplan.core import format_stress
 from rantanplan.core import generate_liaison_positions
 from rantanplan.core import generate_phonological_groups
+from rantanplan.core import get_last_syllable
 from rantanplan.core import get_orthographic_accent
 from rantanplan.core import get_phonological_groups
+from rantanplan.core import get_rhythmical_pattern
 from rantanplan.core import get_scansion
+from rantanplan.core import get_stresses
 from rantanplan.core import get_syllables_word_end
 from rantanplan.core import get_word_stress
 from rantanplan.core import get_words
@@ -39,6 +45,11 @@ def rhyme_analysis_sonnet():
 def scansion_sonnet():
     return json.loads(
         Path("tests/fixtures/scansion_sonnet.json").read_text())
+
+
+@pytest.fixture
+def haiku():
+    return json.loads(Path("tests/fixtures/haiku.json").read_text())
 
 
 class TokenMock(mock.MagicMock):
@@ -411,7 +422,7 @@ def test_get_scansion_spacy_doc_text():
     assert get_scansion(text) == output
 
 
-def test_get_scansion_rhyme_analysis(rhyme_analysis_sonnet):
+def test_get_scansion_rhyme_analysis_sonnet(rhyme_analysis_sonnet):
     text = """Cruel amor, ¿tan fieras sinrazones
     tras tanta confusión, tras pena tanta?
     ¿De qué sirve la argolla a la garganta
@@ -429,6 +440,46 @@ def test_get_scansion_rhyme_analysis(rhyme_analysis_sonnet):
     assert get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
 
 
+def test_get_scansion_structures_length():
+    text = "casa azul"
+    output = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'ca', 'is_stressed': True},
+                {'syllable': 'sa',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}],
+                'stress_position': -2},
+            {'word': [
+                {'syllable': 'a', 'is_stressed': False},
+                {'syllable': 'zul', 'is_stressed': True,
+                 'is_word_end': True}
+            ],
+                'stress_position': -1}
+        ],
+            'phonological_groups': [
+                {'syllable': 'ca', 'is_stressed': True},
+                {'syllable': 'sa',
+                 'is_stressed': False,
+                 'has_synalepha': False,
+                 'is_word_end': True},
+                {'syllable': 'a', 'is_stressed': False},
+                {'syllable': 'zul', 'is_stressed': True,
+                 'is_word_end': True}],
+            'rhythm': {'stress': '+--+-', 'type': 'pattern', 'length': 5}
+        }
+    ]
+    assert get_scansion(text, rhythmical_lengths=[5]) == output
+
+
+def test_get_scansion_rhyme_analysis_haiku_no_rhyme(haiku):
+    text = """Noche sin luna.
+    La tempestad estruja
+    los viejos cedros."""
+    assert get_scansion(text, rhyme_analysis=True) == haiku
+
+
 def test_get_scansion(scansion_sonnet):
     text = """Siempre en octubre comenzaba el año.
     ¡Y cuántas veces esa luz de otoño
@@ -438,7 +489,7 @@ def test_get_scansion(scansion_sonnet):
     assert get_scansion(text, rhythm_format="pattern") == scansion_sonnet
 
 
-def test_get_scansion_stressed_last_syl():
+def test_get_scansion_stressed_last_syllable():
     text = "altavoz"
     output = [
         {'tokens': [
@@ -461,7 +512,7 @@ def test_get_scansion_stressed_last_syl():
     assert get_scansion(text, rhythm_format="pattern") == output
 
 
-def test_get_scansion_stressed_last_syl_index_metrical_pattern():
+def test_get_scansion_stressed_last_syllable_index_metrical_pattern():
     text = "altavoz"
     output = [
         {'tokens': [
@@ -909,3 +960,164 @@ def test_generate_liaison_positions_sinaeresis():
     ]
     assert list(
         generate_liaison_positions(syllables, liaison="sinaeresis")) == output
+
+
+def test_clean_phonological_groups():
+    phonological_groups = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'to', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'tie', 'is_stressed': True},
+        {'syllable': 'ne', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'mu', 'is_stressed': True},
+        {'syllable': 'cho', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'rit', 'is_stressed': True},
+        {'syllable': 'mo', 'is_stressed': False,
+         'is_word_end': True}
+    ]
+    liaison_positions = [0, 0, 0, 0, 0, 0, 0, 0]
+    liaison_property = "has_sinaeresis"
+    output = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'to', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'tie', 'is_stressed': True},
+        {'syllable': 'ne', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'mu', 'is_stressed': True},
+        {'syllable': 'cho', 'is_stressed': False, 'is_word_end': True},
+        {'syllable': 'rit', 'is_stressed': True},
+        {'syllable': 'mo', 'is_stressed': False, 'is_word_end': True}
+    ]
+    assert clean_phonological_groups(phonological_groups,
+                                     liaison_positions, liaison_property) == output
+
+
+def test_get_stresses():
+    phonological_groups = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'to', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'tie', 'is_stressed': True},
+        {'syllable': 'ne', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'mu', 'is_stressed': True},
+        {'syllable': 'cho', 'is_stressed': False,
+         'is_word_end': True},
+        {'syllable': 'rit', 'is_stressed': True},
+        {'syllable': 'mo', 'is_stressed': False,
+         'is_word_end': True}
+    ]
+    output = [True, False, True, False, True, False, True, False]
+    assert (get_stresses(phonological_groups) == output)
+
+
+def test_get_rhythmical_pattern_proparoxytone():
+    phonological_groups = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'toes', 'is_stressed': True, 'synalepha_index': [1],
+         'is_word_end': True}, {'syllable': 'mú', 'is_stressed': True},
+        {'syllable': 'si', 'is_stressed': False},
+        {'syllable': 'ca', 'is_stressed': False, 'is_word_end': True}
+    ]
+    output = {'stress': '+++-', 'type': 'pattern', 'length': 4}
+    assert get_rhythmical_pattern(phonological_groups) == output
+
+
+def test_get_rhythmical_pattern_paroxytone():
+    phonological_groups = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'taes', 'is_stressed': True, 'synalepha_index': [1],
+         'is_word_end': True},
+        {'syllable': 'mi', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'ca', 'is_stressed': True},
+        {'syllable': 'sa', 'is_stressed': False, 'is_word_end': True}
+    ]
+    output = {'stress': '++++-', 'type': 'pattern', 'length': 5}
+    assert get_rhythmical_pattern(phonological_groups) == output
+
+
+def test_get_rhythmical_pattern_oxytone():
+    phonological_groups = [
+        {'syllable': 'es', 'is_stressed': True},
+        {'syllable': 'tees', 'is_stressed': True, 'synalepha_index': [1],
+         'is_word_end': True},
+        {'syllable': 'mi', 'is_stressed': True, 'is_word_end': True},
+        {'syllable': 'cha', 'is_stressed': False},
+        {'syllable': 'lé', 'is_stressed': True, 'is_word_end': True}
+    ]
+    output = {'stress': '+++-+-', 'type': 'pattern', 'length': 6}
+    assert get_rhythmical_pattern(phonological_groups) == output
+
+
+def test_format_stress_pattern():
+    stresses = (True, True, False, True)
+    output = '++-+'
+    assert (format_stress(stresses) == output)
+
+
+def test_format_stress_indexed():
+    stresses = (True, True, False, True)
+    output = '1-2-4'
+    assert (format_stress(stresses, rhythm_format="indexed") == output)
+
+
+def test_format_stress_indexed_custom_separator():
+    stresses = (True, True, False, True)
+    output = '1,2,4'
+    assert (format_stress(stresses, rhythm_format="indexed",
+                          indexed_separator=",") == output)
+
+
+def test_format_stress_binary():
+    stresses = (True, True, False, True)
+    output = '1101'
+    assert (format_stress(stresses, rhythm_format="binary") == output)
+
+
+def test_get_last_syllable():
+    word = [
+        {'word': [
+            {'syllable': 'úl', 'is_stressed': True},
+            {'syllable': 'ti', 'is_stressed': False},
+            {'syllable': 'ma', 'is_stressed': False}
+        ], 'stress_position': -3}
+    ]
+    output = {'syllable': 'ma', 'is_stressed': False}
+    assert get_last_syllable(word) == output
+
+
+def test_apply_exception_rules_des():
+    word = "destituir"
+    output = "des-tituir"
+    assert apply_exception_rules(word) == output
+
+
+def test_apply_exception_rules_sin():
+    word = "sinhueso"
+    output = "sin-hueso"
+    assert apply_exception_rules(word) == output
+
+
+def test_apply_exception_rules_consonan_group_dl():
+    word = "adlativo"
+    output = "ad-lativo"
+    assert apply_exception_rules(word) == output
+
+
+def test_apply_exception_rules_consonan_group_ll():
+    word = "alhábega"
+    output = "al-hábega"
+    assert apply_exception_rules(word) == output
+
+
+def test_apply_exception_rules_consonan_group():
+    word = "aislable"
+    output = "ais-lable"
+    assert apply_exception_rules(word) == output
+
+
+def test_apply_exception_rules_consonan_w_vowel():
+    word = "kiwi"
+    output = "ki-wi"
+    assert apply_exception_rules(word) == output

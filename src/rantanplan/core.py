@@ -553,7 +553,7 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
 def get_last_syllable(token_list):
     """
     Gets last syllable from a word in a dictionary
-    :param token_list: list of dictionary tokens
+    :param token_list: list of dictionaries with line tokens
     :return: Last syllable
     """
     if len(token_list) > 0:
@@ -596,12 +596,15 @@ def get_words(word_list, alternative_syllabification=False):
     return syllabified_words
 
 
-def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern"):
+def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
+                 rhythmical_lengths=None):
     """
     Generates a list of dictionaries for each line
     :param text: Full text to be analyzed
     :param rhyme_analysis: Specify if rhyme analysis is to be performed
     :param rhythm_format: output format for rhythm analysis
+    :param rhythmical_lengths: List with explicit rhythmical lengths per line
+    that the analysed lines has to meet
     :return: list of dictionaries per line
     :rtype: list
     """
@@ -651,20 +654,24 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern"):
                     else:
                         line["rhyme_type"] = rhyme["rhyme_type"]
                         line["rhyme_relaxation"] = rhyme["rhyme_relaxation"]
-        for idx, line in enumerate(lines):
-            structure_length = STRUCTURES_LENGTH.get(line["structure"], None)
-            if structure_length is not None:
-                if line["rhythm"]["length"] < structure_length[idx]:
-                    candidates = generate_phonological_groups(raw_tokens[idx])
-                    for candidate in candidates:
-                        rhythm = get_rhythmical_pattern(
-                            candidate, rhythm_format)
-                        if rhythm["length"] == structure_length[idx]:
-                            line.update({
-                                "phonological_groups": candidate,
-                                "rhythm": rhythm,
-                            })
-                            break
+    for idx, line in enumerate(lines):
+        if rhythmical_lengths is not None:
+            structure_length = rhythmical_lengths
+        else:
+            line_structure = line.get("structure", None)
+            structure_length = STRUCTURES_LENGTH.get(line_structure, None)
+        if structure_length is not None:
+            if line["rhythm"]["length"] < structure_length[idx]:
+                candidates = generate_phonological_groups(raw_tokens[idx])
+                for candidate in candidates:
+                    rhythm = get_rhythmical_pattern(
+                        candidate, rhythm_format)
+                    if rhythm["length"] == structure_length[idx]:
+                        line.update({
+                            "phonological_groups": candidate,
+                            "rhythm": rhythm,
+                        })
+                        break
     return lines
 
 
