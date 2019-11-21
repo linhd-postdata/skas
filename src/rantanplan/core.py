@@ -418,6 +418,7 @@ def syllabify(word, alternative_syllabification=False):
         return (output,
                 ALTERNATIVE_SYLLABIFICATION.get(original_word, (None, ()))[1])
 
+
 def get_orthographic_accent(syllable_list):
     """
     Given a list of str representing syllables,
