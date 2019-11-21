@@ -63,7 +63,6 @@ letter_clusters_re = re.compile(r"""
     #11: any char
     ([a-záéíóúñ])""", re.I | re.U | re.VERBOSE)  # VERBOSE to catch the group
 
-
 """
 Rhythmical Analysis
 """
@@ -418,7 +417,6 @@ def syllabify(word, alternative_syllabification=False):
     else:
         return (output,
                 ALTERNATIVE_SYLLABIFICATION.get(original_word, (None, ()))[1])
-
 
 def get_orthographic_accent(syllable_list):
     """
