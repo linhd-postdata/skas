@@ -15,7 +15,9 @@ test_dict_list = [
 
 def test_load_pipeline(monkeypatch):
     def mockreturn(lang=None):
-        return spacy.blank('es')
+        nlp = spacy.blank('es')  # noqa
+        nlp.vocab.lookups.get_table = lambda *_: {}
+        return nlp
 
     monkeypatch.setattr(spacy, 'load', mockreturn)
     # lang doesn't matter as long as it hasn't been used in the test session
