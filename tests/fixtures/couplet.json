@@ -1,0 +1,240 @@
+[
+  {
+    "tokens": [
+      {
+        "word": [
+          {
+            "syllable": "Aun",
+            "is_stressed": false
+          },
+          {
+            "syllable": "que",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "la",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "mo",
+            "is_stressed": true
+          },
+          {
+            "syllable": "na",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "word": [
+          {
+            "syllable": "se",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "vis",
+            "is_stressed": true
+          },
+          {
+            "syllable": "ta",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "word": [
+          {
+            "syllable": "de",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "se",
+            "is_stressed": true
+          },
+          {
+            "syllable": "da",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "symbol": ","
+      }
+    ],
+    "phonological_groups": [
+      {
+        "syllable": "Aun",
+        "is_stressed": false
+      },
+      {
+        "syllable": "que",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "la",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "mo",
+        "is_stressed": true
+      },
+      {
+        "syllable": "na",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "se",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "vis",
+        "is_stressed": true
+      },
+      {
+        "syllable": "ta",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "de",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "se",
+        "is_stressed": true
+      },
+      {
+        "syllable": "da",
+        "is_stressed": false,
+        "is_word_end": true
+      }
+    ],
+    "rhythm": {
+      "stress": "---+--+--+-",
+      "type": "pattern",
+      "length": 11
+    },
+    "structure": "couplet",
+    "rhyme": "a",
+    "ending": "eda",
+    "ending_stress": -3,
+    "rhyme_type": "consonant",
+    "rhyme_relaxation": true
+  },
+  {
+    "tokens": [
+      {
+        "word": [
+          {
+            "syllable": "mo",
+            "is_stressed": true
+          },
+          {
+            "syllable": "na",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "word": [
+          {
+            "syllable": "se",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "que",
+            "is_stressed": true
+          },
+          {
+            "syllable": "da",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "symbol": "."
+      }
+    ],
+    "phonological_groups": [
+      {
+        "syllable": "mo",
+        "is_stressed": true
+      },
+      {
+        "syllable": "na",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "se",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "que",
+        "is_stressed": true
+      },
+      {
+        "syllable": "da",
+        "is_stressed": false,
+        "is_word_end": true
+      }
+    ],
+    "rhythm": {
+      "stress": "+--+-",
+      "type": "pattern",
+      "length": 5
+    },
+    "structure": "couplet",
+    "rhyme": "a",
+    "ending": "eda",
+    "ending_stress": -3,
+    "rhyme_type": "consonant",
+    "rhyme_relaxation": true
+  }
+]

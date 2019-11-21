@@ -1,0 +1,258 @@
+[
+  {
+    "tokens": [
+      {
+        "word": [
+          {
+            "syllable": "No",
+            "is_stressed": true
+          },
+          {
+            "syllable": "che",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "word": [
+          {
+            "syllable": "sin",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "lu",
+            "is_stressed": true
+          },
+          {
+            "syllable": "na",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "symbol": "."
+      }
+    ],
+    "phonological_groups": [
+      {
+        "syllable": "No",
+        "is_stressed": true
+      },
+      {
+        "syllable": "che",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "sin",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "lu",
+        "is_stressed": true
+      },
+      {
+        "syllable": "na",
+        "is_stressed": false,
+        "is_word_end": true
+      }
+    ],
+    "rhythm": {
+      "stress": "+--+-",
+      "type": "pattern",
+      "length": 5
+    },
+    "structure": "haiku",
+    "rhyme": "a",
+    "ending": "ua",
+    "ending_stress": -2,
+    "rhyme_type": "assonant",
+    "rhyme_relaxation": true
+  },
+  {
+    "tokens": [
+      {
+        "word": [
+          {
+            "syllable": "La",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "tem",
+            "is_stressed": false
+          },
+          {
+            "syllable": "pes",
+            "is_stressed": false
+          },
+          {
+            "syllable": "tad",
+            "is_stressed": true,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -1
+      },
+      {
+        "word": [
+          {
+            "syllable": "es",
+            "is_stressed": false
+          },
+          {
+            "syllable": "tru",
+            "is_stressed": true
+          },
+          {
+            "syllable": "ja",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      }
+    ],
+    "phonological_groups": [
+      {
+        "syllable": "La",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "tem",
+        "is_stressed": false
+      },
+      {
+        "syllable": "pes",
+        "is_stressed": false
+      },
+      {
+        "syllable": "tad",
+        "is_stressed": true,
+        "is_word_end": true
+      },
+      {
+        "syllable": "es",
+        "is_stressed": false
+      },
+      {
+        "syllable": "tru",
+        "is_stressed": true
+      },
+      {
+        "syllable": "ja",
+        "is_stressed": false,
+        "is_word_end": true
+      }
+    ],
+    "rhythm": {
+      "stress": "---+-+-",
+      "type": "pattern",
+      "length": 7
+    },
+    "structure": "haiku",
+    "rhyme": "a",
+    "ending": "ua",
+    "ending_stress": -2,
+    "rhyme_type": "assonant",
+    "rhyme_relaxation": true
+  },
+  {
+    "tokens": [
+      {
+        "word": [
+          {
+            "syllable": "los",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": 0
+      },
+      {
+        "word": [
+          {
+            "syllable": "vie",
+            "is_stressed": true
+          },
+          {
+            "syllable": "jos",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "word": [
+          {
+            "syllable": "ce",
+            "is_stressed": true
+          },
+          {
+            "syllable": "dros",
+            "is_stressed": false,
+            "is_word_end": true
+          }
+        ],
+        "stress_position": -2
+      },
+      {
+        "symbol": "."
+      }
+    ],
+    "phonological_groups": [
+      {
+        "syllable": "los",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "vie",
+        "is_stressed": true
+      },
+      {
+        "syllable": "jos",
+        "is_stressed": false,
+        "is_word_end": true
+      },
+      {
+        "syllable": "ce",
+        "is_stressed": true
+      },
+      {
+        "syllable": "dros",
+        "is_stressed": false,
+        "is_word_end": true
+      }
+    ],
+    "rhythm": {
+      "stress": "-+-+-",
+      "type": "pattern",
+      "length": 5
+    },
+    "structure": "haiku",
+    "rhyme": "-",
+    "ending": "",
+    "ending_stress": 0,
+    "rhyme_type": "",
+    "rhyme_relaxation": null
+  }
+]
