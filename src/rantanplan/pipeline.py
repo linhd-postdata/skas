@@ -46,7 +46,7 @@ def load_pipeline(lang=None, split_affixes=True):
             nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
             suffixes = {k: v for k, v in load_affixes().items() if
                         k.startswith(AFFIXES_SUFFIX)}
-            affixes_matcher = AffixesMatcher(nlp, split_on=["VERB"],
+            affixes_matcher = AffixesMatcher(nlp, split_on=["VERB", "AUX"],
                                              rules=suffixes)
             nlp.add_pipe(affixes_matcher, name="affixes", first=True)
         _load_pipeline[lang] = nlp
