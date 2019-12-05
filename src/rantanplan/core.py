@@ -71,18 +71,21 @@ STRONG_VOWELS = set("aeoáéóÁÉÓAEO")
 WEAK_VOWELS = set("iuüíúIÍUÜÚ")
 LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚyY")
 LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhyYH")
+
 STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti",
                                      "un"}
+
 UNSTRESSED_UNACCENTED_MONOSYLLABLES = {'de', 'el', 'la', 'las', 'le', 'les',
                                        'lo', 'los',
                                        'mas', 'me', 'mi', 'nos', 'os', 'que',
                                        'se', 'si',
                                        'su', 'tan', 'te', 'tu', "tus", "oh"}
-UNSTRESSED_FORMS = {"que", "cual", "quien", "donde", "cuando", "cuanto",
-                    "como"}
 
-POSSESSIVE_PRON = {"mío", "mía", "míos", "mías", "tuyo", "tuya", "tuyos",
-                   "tuyas", "suyo", "suya", "suyos", "suyas"}
+UNSTRESSED_FORMS = {"ay", "don", "doña", "aun", "que", "cual", "quien", "donde",
+                    "cuando", "cuanto", "como", "cuantas", "cuantos"}
+
+STRESSED_PRON = {"mío", "mía", "míos", "mías", "tuyo", "tuya", "tuyos",
+                 "tuyas", "suyo", "suya", "suyos", "suyas", "todo"}
 
 POSSESSIVE_PRON_UNSTRESSED = {"nuestro", "nuestra", "nuestros", "nuestras",
                               "vuestro", "vuestra", "vuestros", "vuestras"}
@@ -282,14 +285,29 @@ def get_stresses(phonological_groups):
     :return: List of boolean values indicating whether a group is
     stressed (True) or not (False)
     """
-    stresses = [group["is_stressed"] for group in phonological_groups]
+    # stresses = [group["is_stressed"] for group in phonological_groups]
+    stresses = []
+    last_word_syllables = []
+    for group in phonological_groups:
+        stresses.append(group["is_stressed"])
+    for group in phonological_groups:
+        last_word_syllables.append(group.get("is_word_end", False))
+    # Get position for the last syllable of the penultimate word
+    if last_word_syllables.count(True) > 1:
+        penultimate_word = -(
+            [i for i, n in enumerate(last_word_syllables[::-1]) if n][1] + 1)
+    else:
+        penultimate_word = None
     last_stress = -(stresses[::-1].index(True) + 1)
     # Oxytone (Aguda)
     if last_stress == -1:
         stresses.append(False)
     # Paroxytone (Esdrújula) or Proparoxytone (Sobreesdrújula)
     elif last_stress <= -3:
-        stresses.pop()
+        if penultimate_word is None:
+            stresses.pop()
+        elif last_stress > penultimate_word:
+            stresses.pop()
     return stresses
 
 
@@ -469,7 +487,7 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
     """
     Gets a list of syllables from a word and creates a list with syllabified
     word and stressed syllable index
-    :param word: List of str representing syllables
+    :param word: Word string
     :param alternative_syllabification: Wether or not the alternative
     syllabification is used
     :param pos: PoS tag from spacy ("DET")
@@ -481,7 +499,19 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
     :rtype: dict
     """
     syllable_list, _ = syllabify(word, alternative_syllabification)
-    word_lower = "".join(word).lower()
+    word_lower = word.lower()
+    # Handle secondary stress on adverbs ending in -mente
+    if pos == "ADV" and word_lower[-5:] == "mente" and len(word) > 5:
+        root = word[:-5]
+        mente = word[-5:]
+        stress_root = get_word_stress(root, "ADJ", "")
+        stress_mente = get_word_stress(mente, "NOUN", "")
+        return {
+            'word': stress_root['word'] + stress_mente['word'],
+            "stress_position": stress_root['stress_position'] - len(
+                stress_mente['word']),
+            "secondary_stress_positions": [stress_mente['stress_position']],
+        }
     if len(syllable_list) == 1:
         first_monosyllable = syllable_list[0].lower()
         if ((first_monosyllable not in UNSTRESSED_UNACCENTED_MONOSYLLABLES)
@@ -489,7 +519,7 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
                      or pos not in ("SCONJ", "CCONJ", "DET", "PRON", "ADP")
                      or (pos == "PRON" and tag.get("Case") == "Nom")
                      or (pos == "DET" and tag.get("Definite") in (
-                         "Dem", "Ind"))
+                                "Dem", "Ind"))
                      or pos in ("PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
                      or (pos == "ADJ" and tag.get("Poss", None) != "Yes")
                      or (pos == "PRON"
@@ -500,37 +530,50 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
                      or (pos in ("PRON", "DET")
                          and tag.get("PronType", None) in (
                                  "Exc", "Int", "Dem"))
-                     or "".join(word).lower() in POSSESSIVE_PRON)):
+                     or "".join(word).lower() in STRESSED_PRON) and (
+                        word_lower not in UNSTRESSED_FORMS)):
             stressed_position = -1
         else:
             stressed_position = 0  # unstressed monosyllable
-    elif (pos in ("INTJ", "PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
-          or pos == "ADJ" and word_lower not in POSSESSIVE_PRON_UNSTRESSED
-          or (pos == "PRON" and tag.get("PronType", None) in ("Prs", "Ind"))
-          or (pos == "DET" and tag.get("PronType", None) in ("Dem", "Ind"))
-          or (pos == "DET" and tag.get("Definite", None) == "Ind")
-          or (pos == "PRON" and tag.get("Poss", None) == "Yes")
-          or (pos in ("PRON", "DET")
-              and tag.get("PronType", None) in ("Exc", "Int", "Dem"))
-          or (word_lower in POSSESSIVE_PRON)):
-        tilde = get_orthographic_accent(syllable_list)
-        # If an orthographic accent exists, the syllable negative index is saved
-        if tilde is not None:
-            stressed_position = -(len(syllable_list) - tilde)
-        # Elif the word is paroxytone (llana) we save the penultimate syllable.
-        elif is_paroxytone(syllable_list):
-            stressed_position = -2
-        # If the word does not meet the above criteria that means that it's an
-        # oxytone word (aguda).
-        else:
-            stressed_position = -1
     else:
-        stressed_position = 0  # unstressed
+        tilde = get_orthographic_accent(syllable_list)
+        if tilde is not None:
+            stressed_position = tilde - len(syllable_list)
+        elif (pos in ("INTJ", "PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
+              or pos == "ADJ"
+              or (pos == "PRON" and tag.get("PronType", None) in (
+                        "Prs", "Ind"))
+              or (pos == "DET" and tag.get("PronType", None) in (
+                        "Dem", "Ind"))
+              or (pos == "DET" and tag.get("Definite", None) == "Ind")
+              or (pos == "PRON" and tag.get("Poss", None) == "Yes")
+              or (pos in ("PRON", "DET")
+                  and tag.get("PronType", None) in ("Exc", "Int", "Dem"))
+              or (word_lower in STRESSED_PRON)) and (
+                word_lower not in UNSTRESSED_FORMS) and (
+                word_lower not in POSSESSIVE_PRON_UNSTRESSED):
+            tilde = get_orthographic_accent(syllable_list)
+            # If an orthographic accent exists,
+            # the syllable negative index is saved
+            if tilde is not None:
+                stressed_position = -(len(syllable_list) - tilde)
+            # Elif the word is paroxytone (llana)
+            # we save the penultimate syllable.
+            elif is_paroxytone(syllable_list):
+                stressed_position = -2
+            # If the word does not meet the above criteria that means
+            # that it's an oxytone word (aguda).
+            else:
+                stressed_position = -1
+        else:
+            stressed_position = 0  # unstressed
     out_syllable_list = []
     for index, syllable in enumerate(syllable_list):
         out_syllable_list.append(
-            {"syllable": syllable,
-             "is_stressed": len(syllable_list) - index == -stressed_position})
+            {
+                "syllable": syllable,
+                "is_stressed": len(syllable_list) - index == -stressed_position
+            })
         if index < 1:
             continue
         # Sinaeresis
@@ -583,16 +626,51 @@ def get_words(word_list, alternative_syllabification=False):
             tags = spacy_tag_to_dict(tag)
             stressed_word = get_word_stress(word.text, pos, tags,
                                             alternative_syllabification)
-            first_syllable = get_last_syllable(syllabified_words)
-            second_syllable = stressed_word['word'][0]
-            # Synalepha
-            if first_syllable and second_syllable and have_prosodic_liaison(
-                    first_syllable, second_syllable):
-                first_syllable.update({'has_synalepha': True})
+            if word.pos_ in ("AUX", "VERB") and word._.affixes_length:
+                stressed_word.update(
+                    {'affixes_length': word._.affixes_length})
+                stressed_word.update({'pos': word.pos_, 'tag': word.tag_})
             syllabified_words.append(stressed_word)
         else:
             syllabified_words.append({"symbol": word.text})
+    syllabified_words = join_affixes(syllabified_words)
+    clean_word_list = [syll for syll in syllabified_words if "word" in syll]
+    # Synalepha
+    for index, word in enumerate(clean_word_list):
+        if len(clean_word_list) != index + 1:
+            first_syllable = clean_word_list[index]['word'][-1]
+            second_syllable = clean_word_list[index + 1]['word'][0]
+            if first_syllable and second_syllable and have_prosodic_liaison(
+                    first_syllable, second_syllable):
+                first_syllable.update({'has_synalepha': True})
     return syllabified_words
+
+
+def join_affixes(line):
+    """
+    Join affixes of split words and recalculates stress
+    :param line: List of syllabified words (dict)
+    :return: List of syllabified words (dict) with joined affixes
+    """
+    syllabified_words = []
+    indices_to_ignore = []
+    for index, word in enumerate(line):
+        affixes_length = word.get('affixes_length', None)
+        if index in indices_to_ignore:
+            continue
+        elif affixes_length is None:
+            syllabified_words.append(word)
+        else:
+            indices_to_ignore = range(index, index + affixes_length + 1)
+            join_word = []
+            for affix_index in indices_to_ignore:
+                affix = line[affix_index]['word']
+                join_word += [syll["syllable"] for syll in affix]
+            word_stress = get_word_stress("".join(join_word), word["pos"],
+                                          word["tag"])
+            word_stress["word"][-1]["is_word_end"] = True
+            syllabified_words.append(word_stress)
+    return syllabified_words if syllabified_words else line
 
 
 def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
@@ -692,9 +770,9 @@ def generate_phonological_groups(tokens):
         syllables = get_syllables_word_end(words)
         for liaison in (
                 ("synalepha",),
+                ("synalepha", "sinaeresis"),
                 ("sinaeresis",),
                 ("sinaeresis", "synalepha"),
-                ("synalepha", "sinaeresis"),
         ):
             for ignore_synalepha_h in (break_on_h, None):
                 for liaison_positions_1 in generate_liaison_positions(
@@ -710,7 +788,7 @@ def generate_phonological_groups(tokens):
                         yield groups
                     else:
                         for liaison_positions_2 in generate_liaison_positions(
-                            syllables, liaison[1]
+                                syllables, liaison[1]
                         ):
                             yield get_phonological_groups(
                                 groups,

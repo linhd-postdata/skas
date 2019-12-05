@@ -1828,21 +1828,15 @@
           },
           {
             "syllable": "dir",
-            "is_stressed": true,
-            "is_word_end": true
-          }
-        ],
-        "stress_position": -1
-      },
-      {
-        "word": [
+            "is_stressed": true
+          },
           {
             "syllable": "me",
             "is_stressed": false,
             "is_word_end": true
           }
         ],
-        "stress_position": 0
+        "stress_position": -2
       }
     ],
     "phonological_groups": [
@@ -1891,8 +1885,7 @@
       },
       {
         "syllable": "dir",
-        "is_stressed": true,
-        "is_word_end": true
+        "is_stressed": true
       },
       {
         "syllable": "me",
@@ -2143,21 +2136,15 @@
           },
           {
             "syllable": "tir",
-            "is_stressed": true,
-            "is_word_end": true
-          }
-        ],
-        "stress_position": -1
-      },
-      {
-        "word": [
+            "is_stressed": true
+          },
           {
             "syllable": "me",
             "is_stressed": false,
             "is_word_end": true
           }
         ],
-        "stress_position": 0
+        "stress_position": -2
       },
       {
         "symbol": "."
@@ -2209,8 +2196,7 @@
       },
       {
         "syllable": "tir",
-        "is_stressed": true,
-        "is_word_end": true
+        "is_stressed": true
       },
       {
         "syllable": "me",
