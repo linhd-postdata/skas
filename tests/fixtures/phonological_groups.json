@@ -282,618 +282,6 @@
     {
       "syllable": "rro",
       "is_stressed": false,
-      "has_synalepha": true,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": true,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": true,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": true,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rroha",
-      "is_stressed": true,
-      "synalepha_index": [
-        2
-      ]
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rroha",
-      "is_stressed": true,
-      "synalepha_index": [
-        2
-      ]
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rroha",
-      "is_stressed": true,
-      "synalepha_index": [
-        2
-      ]
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rroha",
-      "is_stressed": true,
-      "synalepha_index": [
-        2
-      ]
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "cea",
-      "is_stressed": true,
-      "synalepha_index": [
-        1
-      ]
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "ha",
-      "is_stressed": true
-    },
-    {
-      "syllable": "ce",
-      "is_stressed": false,
-      "has_synalepha": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "a",
-      "is_stressed": true
-    },
-    {
-      "syllable": "guas",
-      "is_stressed": false,
-      "is_word_end": true
-    }
-  ],
-  [
-    {
-      "syllable": "el",
-      "is_stressed": false,
-      "is_word_end": true
-    },
-    {
-      "syllable": "pe",
-      "is_stressed": true
-    },
-    {
-      "syllable": "rro",
-      "is_stressed": false,
       "has_synalepha": false,
       "is_word_end": true
     },
@@ -1481,6 +869,618 @@
       "syllable": "ce",
       "is_stressed": false,
       "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rroha",
+      "is_stressed": true,
+      "synalepha_index": [
+        2
+      ]
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rroha",
+      "is_stressed": true,
+      "synalepha_index": [
+        2
+      ]
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rroha",
+      "is_stressed": true,
+      "synalepha_index": [
+        2
+      ]
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rroha",
+      "is_stressed": true,
+      "synalepha_index": [
+        2
+      ]
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "cea",
+      "is_stressed": true,
+      "synalepha_index": [
+        1
+      ]
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": true,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": true,
+      "is_word_end": true
+    },
+    {
+      "syllable": "a",
+      "is_stressed": true
+    },
+    {
+      "syllable": "guas",
+      "is_stressed": false,
+      "is_word_end": true
+    }
+  ],
+  [
+    {
+      "syllable": "el",
+      "is_stressed": false,
+      "is_word_end": true
+    },
+    {
+      "syllable": "pe",
+      "is_stressed": true
+    },
+    {
+      "syllable": "rro",
+      "is_stressed": false,
+      "has_synalepha": true,
+      "is_word_end": true
+    },
+    {
+      "syllable": "ha",
+      "is_stressed": true
+    },
+    {
+      "syllable": "ce",
+      "is_stressed": false,
+      "has_synalepha": true,
       "is_word_end": true
     },
     {

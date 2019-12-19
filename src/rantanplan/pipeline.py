@@ -29,10 +29,11 @@ def custom_tokenizer(nlp):
 _load_pipeline = {}
 
 
-def load_pipeline(lang=None):
+def load_pipeline(lang=None, split_affixes=True):
     """
     Loads the new pipeline with the custom tokenizer
     :param lang: Spacy language model
+    :param split_affixes: Whether or not to use spacy_affixes to split words
     :return: New custom language model
     """
     global _load_pipeline
@@ -41,9 +42,12 @@ def load_pipeline(lang=None):
     if lang not in _load_pipeline:
         nlp = spacy.load(lang)
         nlp.tokenizer = custom_tokenizer(nlp)
-        nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
-        suffixes = {k: v for k, v in load_affixes().items() if k.startswith(AFFIXES_SUFFIX)}
-        affixes_matcher = AffixesMatcher(nlp, split_on=["VERB"], rules=suffixes)
-        nlp.add_pipe(affixes_matcher, name="affixes", first=True)
+        if split_affixes:
+            nlp.remove_pipe("affixes") if nlp.has_pipe("affixes") else None
+            suffixes = {k: v for k, v in load_affixes().items() if
+                        k.startswith(AFFIXES_SUFFIX)}
+            affixes_matcher = AffixesMatcher(nlp, split_on=["VERB", "AUX"],
+                                             rules=suffixes)
+            nlp.add_pipe(affixes_matcher, name="affixes", first=True)
         _load_pipeline[lang] = nlp
     return _load_pipeline[lang]
