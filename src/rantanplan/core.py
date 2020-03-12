@@ -13,143 +13,44 @@ from itertools import product
 
 from spacy.tokens import Doc
 
-from .alternative_syllabification import ALTERNATIVE_SYLLABIFICATION
-from .alternative_syllabification import SYLLABIFICATOR_FOREIGN_WORDS_DICT
 from .pipeline import load_pipeline
 from .rhymes import STRUCTURES_LENGTH
 from .rhymes import analyze_rhyme
-
-"""
-Syllabification
-"""
-accents_re = re.compile("[áéíóú]", re.I | re.U)
-paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$",
-                           # checks if a str ends in unaccented vowel/N/S
-                           re.I | re.U)
-
-"""
-Regular expressions for spanish syllabification.
-For the 'tl' cluster we have decided to join the two letters
-because is the most common syllabification and the same that
-Perkins (http://sadowsky.cl/perkins.html), DIRAE (https://dirae.es/),
-and Educalingo (https://educalingo.com/es/dic-es) use.
-"""
-letter_clusters_re = re.compile(r"""
-    # 1: weak vowels diphthong with h
-    ([iuü]h[iuü])|
-    # 2: open vowels
-    ([aáeéíoóú]h[iuü])|
-    # 3: closed vowels
-    ([iuü]h[aáeéíoóú])|
-    # 4: liquid and mute consonants (adds hyphen)
-    ([a-záéíóúñ](?:(?:[bcdfghjklmnñpqstvy][hlr])|
-    (?:[bcdfghjklmnñpqrstvy][hr])|
-    (?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
-    # 5: any char followed by liquid and mute consonant,
-    # exceptions for 'r+l' and 't+l'
-    ((?:(?:[bcdfghjklmnñpqstvy][hlr])|
-    (?:[bcdfghjklmnñpqrstvy][hr])|
-    (?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
-    # 6: non-liquid consonant (adds hyphen)
-    ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúüï])|
-    # 7: vowel group (adds hyphen)
-    ([aáeéíoóú][aáeéíoóú])|
-    # 8: umlaut 'u' diphthongs
-    (ü[iíaeo])|
-    # 9: Explicit hiatus with umlaut vowels, first part
-    ([aeiou][äëïöü])|
-    #10: Explicit hiatus with umlaut vowels, second part
-    ([üäëïö][a-z])|
-    #11: any char
-    ([a-záéíóúñ])""", re.I | re.U | re.VERBOSE)  # VERBOSE to catch the group
-
-"""
-Rhythmical Analysis
-"""
-SPACE = "SPACE"
-STRONG_VOWELS = set("aeoáéóÁÉÓAEO")
-WEAK_VOWELS = set("iuüíúIÍUÜÚ")
-LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚyY")
-LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhyYH")
-
-STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti",
-                                     "un"}
-
-UNSTRESSED_UNACCENTED_MONOSYLLABLES = {'de', 'el', 'la', 'las', 'le', 'les',
-                                       'lo', 'los',
-                                       'mas', 'me', 'mi', 'nos', 'os', 'que',
-                                       'se', 'si',
-                                       'su', 'tan', 'te', 'tu', "tus", "oh"}
-
-UNSTRESSED_FORMS = {"ay", "don", "doña", "aun", "que", "cual", "quien", "donde",
-                    "cuando", "cuanto", "como", "cuantas", "cuantos"}
-
-STRESSED_PRON = {"mío", "mía", "míos", "mías", "tuyo", "tuya", "tuyos",
-                 "tuyas", "suyo", "suya", "suyos", "suyas", "todo"}
-
-POSSESSIVE_PRON_UNSTRESSED = {"nuestro", "nuestra", "nuestros", "nuestras",
-                              "vuestro", "vuestra", "vuestros", "vuestras"}
-
-"""
-Regular expressions and rules for syllabification exceptions
-"""
-
-# Words starting with prefixes SIN-/DES- followed by consonant "destituir"
-PREFIX_DES_WITH_CONSONANT_RE = (
-    re.compile("^(des)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
-
-# Words starting with prefixes SIN-/DES- followed by consonant "sinhueso"
-PREFIX_SIN_WITH_CONSONANT_RE = (
-    re.compile("^(sin)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
-
-# Group consonant+[hlr] with exceptions for ll
-CONSONANT_GROUP = (re.compile("(.*[hmnqsw])([hlr][aeiouáéíóú].*)", re.I | re.U))
-CONSONANT_GROUP_EXCEPTION_LL = (
-    re.compile("(.*[hlmnqsw])([hr][aeiouáéíóú].*)", re.I | re.U))
-CONSONANT_GROUP_EXCEPTION_DL = (
-    re.compile("(.*[d])([l][aeiouáéíóú].*)", re.I | re.U))
-
-# Group vowel+ w + vowel
-W_VOWEL_GROUP = (re.compile("(.*[aeiouáéíóú])(w[aeiouáéíóú].*)", re.I | re.U))
-
-# Post-syllabification exceptions for consonant clusters and diphthongs
-# Explicitit hiatus on first vowel
-HIATUS_FIRST_VOWEL_RE = (re.compile(
-    "(?:(.*-)|^)([äëïö]|[^g]ü)([aeiouúáéíó].*)",
-    re.I | re.U | re.VERBOSE))
-
-# Consonant cluster. Example: 'cneorácea'
-CONSONANT_CLUSTER_RE = (re.compile(
-    "(?:(.*-)|^)([mpgc])-([bcdfghjklmñnpqrstvwxyz][aeioáéíó].*)",
-    re.I | re.U | re.VERBOSE))
-
-# Lowering diphthong. Example: 'ahijador'
-LOWERING_DIPHTHONGS_WITH_H = (
-    re.compile(
-        """((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)
-        ([aeo])-(h[iu](?![aeoiuíúáéó]).*)""",
-        re.I | re.U | re.VERBOSE))
-
-# Lowering diphthong. Example: 'buhitiho'
-RAISING_DIPHTHONGS_WITH_H = (
-    re.compile(
-        """((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)
-        ([iu])-(h[aeiouáéó](?![aeoáéiuíú]).*)""",
-        re.I | re.U | re.VERBOSE))
-
-"""
-Rhythmical Analysis functions
-"""
+from .syllabification import ALTERNATIVE_SYLLABIFICATION
+from .syllabification import CONSONANT_CLUSTER_RE
+from .syllabification import CONSONANT_GROUP
+from .syllabification import CONSONANT_GROUP_EXCEPTION_DL
+from .syllabification import CONSONANT_GROUP_EXCEPTION_LL
+from .syllabification import HIATUS_FIRST_VOWEL_RE
+from .syllabification import LIAISON_FIRST_PART
+from .syllabification import LIAISON_SECOND_PART
+from .syllabification import LOWERING_DIPHTHONGS_WITH_H
+from .syllabification import POSSESSIVE_PRON_UNSTRESSED
+from .syllabification import PREFIX_DES_WITH_CONSONANT_RE
+from .syllabification import PREFIX_SIN_WITH_CONSONANT_RE
+from .syllabification import RAISING_DIPHTHONGS_WITH_H
+from .syllabification import SPACE
+from .syllabification import STRESSED_PRON
+from .syllabification import STRESSED_UNACCENTED_MONOSYLLABLES
+from .syllabification import STRONG_VOWELS
+from .syllabification import SYLLABIFICATOR_FOREIGN_WORDS_DICT
+from .syllabification import UNSTRESSED_FORMS
+from .syllabification import UNSTRESSED_UNACCENTED_MONOSYLLABLES
+from .syllabification import W_VOWEL_GROUP
+from .syllabification import WEAK_VOWELS
+from .syllabification import accents_re
+from .syllabification import letter_clusters_re
+from .syllabification import paroxytone_re
 
 
 def have_prosodic_liaison(first_syllable, second_syllable):
-    """
-    Checkfor prosodic liaison between two syllables
-    :param first_syllable: dic with key syllable (str) and is_stressed (bool)
-                           representing the first syllable
-    :param second_syllable: dic with key syllable (str) and is_stressed (bool)
-                            representing the second syllable
-    :return: True if there is prosodic liaison and False otherwise
+    """Checks for prosodic liaison between two syllables
+
+    :param first_syllable: Dictionary with key syllable (str) and is_stressed (bool) representing
+        the first syllable
+    :param second_syllable: Dictionary with key syllable (str) and is_stressed (bool)
+        representing the second syllable
+    :return: `True` if there is prosodic liaison and `False` otherwise
     :rtype: bool
     """
     if second_syllable['syllable'][0].lower() == 'y' and (
@@ -162,10 +63,11 @@ def have_prosodic_liaison(first_syllable, second_syllable):
 
 
 def get_syllables_word_end(words):
-    """
-    Get a list of syllables from a list of words extracting word boundaries
+    """Get a list of syllables from a list of words extracting word boundaries
+
     :param words: List of dictonaries of syllables for each word in a line
     :return: List of dictionaries of syllables with an extra is_word_end key
+    :rtype: list
     """
     syllables = []
     for word in words:
@@ -180,17 +82,18 @@ def get_syllables_word_end(words):
 
 def get_phonological_groups(word_syllables, liaison_type="synalepha",
                             breakage_func=None, liaison_positions=None):
-    """
-    Get a list of dictionaries for each phonological group on a line
+    """Get a list of dictionaries for each phonological group on a line
     and joins the syllables to create phonological groups (pronounced together)
     according to a type of liaison, either synaloepha or sinaeresis
+
     :param word_syllables: List of dictionaries for each word of the line
     :param liaison_type: Which liaison is going to be performed synalepha or
-                         sinaeresis
+        sinaeresis
     :param breakage_func: Function to decide when not to break a liaison that is
-    specified in liaison_positions
+        specified in liaison_positions
     :param liaison_positions: Positions of the liaisons
     :return: A list of conjoined syllables
+    :rtype: list
     """
     syllables = word_syllables[:]
     liaison_property = f"has_{liaison_type}"
@@ -240,13 +143,14 @@ def get_phonological_groups(word_syllables, liaison_type="synalepha",
 
 
 def clean_phonological_groups(groups, liaison_positions, liaison_property):
-    """
-    Clean phonological groups so their liaison property is consistently set
+    """Clean phonological groups so their liaison property is consistently set
     according to the the liaison positions
+
     :param groups: Phonological groups to be cleaned
     :param liaison_positions: Positions of the liaisons
     :param liaison_property: The liaison type (synaeresis or synalepha)
-    :return:
+    :return: Cleaned phonological groups
+    :rtype: dict
     """
     clean_groups = []
     for idx, group in enumerate(groups):
@@ -260,12 +164,13 @@ def clean_phonological_groups(groups, liaison_positions, liaison_property):
 
 
 def get_rhythmical_pattern(phonological_groups, rhythm_format="pattern"):
-    """
-    Gets a rhythm pattern for a poem in either "pattern": "-++-+-+-"
+    """Gets a rhythm pattern for a poem in either "pattern": "-++-+-+-"
     "binary": "01101010" or "indexed": [1,2,4,6] format
+
     :param phonological_groups: a dictionary with the syllables of the line
     :param rhythm_format: The output format for the rhythm
     :return: Dictionary with with rhythm and phonologic groups
+    :rtype: dict
     """
     stresses = get_stresses(phonological_groups)
     stress = format_stress(stresses, rhythm_format)
@@ -277,15 +182,16 @@ def get_rhythmical_pattern(phonological_groups, rhythm_format="pattern"):
 
 
 def get_stresses(phonological_groups):
-    """
-    Gets a list of stress marks (True for stressed, False for unstressed) from a
-    list of phonological groups applying rules depending on the ending stress.
+    """Gets a list of stress marks (`True` for stressed, `False` for unstressed)
+    from a list of phonological groups applying rules depending on the ending
+    stress.
+
     :param phonological_groups: a dictionary with the phonological groups
-    (syllables) of the line
+        (syllables) of the line
     :return: List of boolean values indicating whether a group is
-    stressed (True) or not (False)
+        stressed (`True`) or not (`False`)
+    :rtype: list
     """
-    # stresses = [group["is_stressed"] for group in phonological_groups]
     stresses = []
     last_word_syllables = []
     for group in phonological_groups:
@@ -312,16 +218,17 @@ def get_stresses(phonological_groups):
 
 
 def format_stress(stresses, rhythm_format="pattern", indexed_separator="-"):
-    """
-    Converts a list of boolean elements into a string that matches the chosen
-    rhythm format:
-                "indexed": 2,5,8
-                "pattern": -++--+-+-
-                "binary": 01101001
+    """Converts a list of boolean elements into a string that matches the chosen
+        rhythm format:
+        "indexed": 2,5,8
+        "pattern": -++--+-+-
+        "binary": 01101001
+
     :param stresses: List of boolean elements representing stressed syllables
     :param rhythm_format: Format to be used: indexed, pattern, or binary
     :param indexed_separator: String to use as a separator for indexed pattern
     :return: String with the stress pattern
+    :rtype: str
     """
     separator = ""
     if rhythm_format == 'indexed':
@@ -342,11 +249,12 @@ Syllabifier functions
 
 
 def apply_exception_rules(word):
-    """
-    Applies presyllabification rules to a word,
+    """Applies presyllabification rules to a word,
     based on Antonio Ríos Mestre's work
+
     :param word: A string to be checked for exceptions
     :return: A string with the presyllabified word
+    :rtype: str
     """
     # Vowel + w + vowel group
     if W_VOWEL_GROUP.match(word):
@@ -380,11 +288,12 @@ def apply_exception_rules(word):
 
 
 def apply_exception_rules_post(word):
-    """
-    Applies presyllabification rules to a word,
+    """Applies presyllabification rules to a word,
     based on Antonio Ríos Mestre's work
+
     :param word: A string to be checked for exceptions
     :return: A string with the presyllabified word with hyphens
+    :rtype: str
     """
     # We make one pass for every match found so we can perform
     # several substitutions
@@ -403,12 +312,12 @@ def apply_exception_rules_post(word):
 
 
 def syllabify(word, alternative_syllabification=False):
-    """
-    Syllabifies a word.
+    """Syllabifies a word.
+
     :param word: The word to be syllabified.
     :param alternative_syllabification: Wether or not the alternative
-    syllabification is used
-    :return: list of syllables and exceptions where appropriate.
+        syllabification is used
+    :return: List of syllables and exceptions where appropriate.
     :rtype: list
     """
     output = ""
@@ -438,10 +347,10 @@ def syllabify(word, alternative_syllabification=False):
 
 
 def get_orthographic_accent(syllable_list):
-    """
-    Given a list of str representing syllables,
+    """Given a list of str representing syllables,
     return position in the list of a syllable bearing
     orthographic stress (with the acute accent mark in Spanish)
+
     :param syllable_list: list of syllables as str or unicode each
     :return: Position or None if no orthographic stress
     :rtype: int
@@ -456,11 +365,11 @@ def get_orthographic_accent(syllable_list):
 
 
 def is_paroxytone(syllables):
-    """
-    Given a list of str representing syllables from a single word,
+    """Given a list of str representing syllables from a single word,
     check if it is paroxytonic (llana) or not
+
     :param syllables: List of syllables as str
-    :return: True if paroxytone, False if not
+    :return: `True` if paroxytone, `False` if not
     :rtype: bool
     """
     if not get_orthographic_accent("".join(syllables)):
@@ -469,12 +378,13 @@ def is_paroxytone(syllables):
 
 
 def spacy_tag_to_dict(tag):
-    """
-    Creater a dict from spacy pos tags
+    """Creates a dict from spacy pos tags
+
     :param tag: Extended spacy pos tag
-    ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
+        ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
     :return: A dictionary in the form of
-    "{'Definite': 'Ind', 'Gender': 'Masc', 'Number': 'Sing', 'PronType': 'Art'}"
+        "{'Definite': 'Ind', 'Gender': 'Masc', 'Number': 'Sing',
+        'PronType': 'Art'}"
     :rtype: dict
     """
     if tag and '=' in tag:
@@ -484,18 +394,17 @@ def spacy_tag_to_dict(tag):
 
 
 def get_word_stress(word, pos, tag, alternative_syllabification=False):
-    """
-    Gets a list of syllables from a word and creates a list with syllabified
+    """Gets a list of syllables from a word and creates a list with syllabified
     word and stressed syllable index
+
     :param word: Word string
     :param alternative_syllabification: Wether or not the alternative
-    syllabification is used
+        syllabification is used
     :param pos: PoS tag from spacy ("DET")
     :param tag: Extended PoS tag info from spacy
-    ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
+        ("Definite=Ind|Gender=Masc|Number=Sing|PronType=Art")
     :return: Dict with [original syllab word, stressed syllabified word,
-    negative index position of stressed syllable or 0
-    if not stressed]
+        negative index position of stressed syllable or 0 if not stressed]
     :rtype: dict
     """
     syllable_list, _ = syllabify(word, alternative_syllabification)
@@ -593,10 +502,11 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
 
 
 def get_last_syllable(token_list):
-    """
-    Gets last syllable from a word in a dictionary
+    """Gets last syllable from a word in a dictionary
+
     :param token_list: list of dictionaries with line tokens
     :return: Last syllable
+    :rtype: str
     """
     if len(token_list) > 0:
         for token in token_list[::-1]:
@@ -605,14 +515,14 @@ def get_last_syllable(token_list):
 
 
 def get_words(word_list, alternative_syllabification=False):
-    """
-    Gets a list of syllables from a word and creates a list with syllabified
+    """Gets a list of syllables from a word and creates a list with syllabified
     word and stressed syllabe index
+
     :param word_list: List of spacy objects representing a word or sentence
     :param alternative_syllabification: Wether or not the alternative
-    syllabification is used
+        syllabification is used
     :return: List with [original syllab. word, stressed syllab. word, negative
-    index position of stressed syllable]
+        index position of stressed syllable]
     :rtype: list
     """
     syllabified_words = []
@@ -647,10 +557,11 @@ def get_words(word_list, alternative_syllabification=False):
 
 
 def join_affixes(line):
-    """
-    Join affixes of split words and recalculates stress
+    """Join affixes of split words and recalculates stress
+
     :param line: List of syllabified words (dict)
     :return: List of syllabified words (dict) with joined affixes
+    :rtype: list
     """
     syllabified_words = []
     indices_to_ignore = []
@@ -675,13 +586,13 @@ def join_affixes(line):
 
 def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                  rhythmical_lengths=None):
-    """
-    Generates a list of dictionaries for each line
+    """Generates a list of dictionaries for each line
+
     :param text: Full text to be analyzed
     :param rhyme_analysis: Specify if rhyme analysis is to be performed
     :param rhythm_format: output format for rhythm analysis
     :param rhythmical_lengths: List with explicit rhythmical lengths per line
-    that the analysed lines has to meet
+        that the analysed lines has to meet
     :return: list of dictionaries per line
     :rtype: list
     """
@@ -760,10 +671,11 @@ def break_on_h(liaison_type, syllable_left, syllable_right):
 
 
 def generate_phonological_groups(tokens):
-    """
-    Generates phonological groups from a list of tokens
+    """Generates phonological groups from a list of tokens
+
     :param tokens: list of spaCy tokens
     :return: Generator with a list of phonological groups
+    :rtype: generator
     """
     for alternative_syllabification in (True, False):
         words = get_words(tokens, alternative_syllabification)
@@ -799,11 +711,12 @@ def generate_phonological_groups(tokens):
 
 
 def generate_liaison_positions(syllables, liaison):
-    """
-    Generates all possible combinations for the liaisons on a list of syllables
+    """Generates all possible combinations for the liaisons on a list of syllables
+
     :param syllables: List of syllables with
     :param liaison: Type of liaison combination to be generated
     :return: Generator with a list of possible combinations
+    :rtype: generator
     """
     positions = [int(syllable.get(f"has_{liaison}", 0))
                  for syllable in syllables]

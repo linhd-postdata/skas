@@ -5,5 +5,5 @@ rantanplan
 
     from rantanplan import *
 
-.. automodule:: rantanplan
+.. automodule:: rantanplan.core
     :members:

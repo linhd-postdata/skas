@@ -1,3 +1,123 @@
+import re
+
+"""
+Syllabification
+"""
+accents_re = re.compile("[áéíóú]", re.I | re.U)
+paroxytone_re = re.compile("([aeiou]|n|[aeiou]s)$",
+                           # checks if a str ends in unaccented vowel/N/S
+                           re.I | re.U)
+
+"""
+Regular expressions for spanish syllabification.
+For the 'tl' cluster we have decided to join the two letters
+because is the most common syllabification and the same that
+Perkins (http://sadowsky.cl/perkins.html), DIRAE (https://dirae.es/),
+and Educalingo (https://educalingo.com/es/dic-es) use.
+"""
+letter_clusters_re = re.compile(r"""
+    # 1: weak vowels diphthong with h
+    ([iuü]h[iuü])|
+    # 2: open vowels
+    ([aáeéíoóú]h[iuü])|
+    # 3: closed vowels
+    ([iuü]h[aáeéíoóú])|
+    # 4: liquid and mute consonants (adds hyphen)
+    ([a-záéíóúñ](?:(?:[bcdfghjklmnñpqstvy][hlr])|
+    (?:[bcdfghjklmnñpqrstvy][hr])|
+    (?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
+    # 5: any char followed by liquid and mute consonant,
+    # exceptions for 'r+l' and 't+l'
+    ((?:(?:[bcdfghjklmnñpqstvy][hlr])|
+    (?:[bcdfghjklmnñpqrstvy][hr])|
+    (?:[bcdfghjklmnñpqrstvyz][h]))[aáeéiíoóuúü])|
+    # 6: non-liquid consonant (adds hyphen)
+    ([a-záéíóúñ][bcdfghjklmnñpqrstvxyz][aáeéiíoóuúüï])|
+    # 7: vowel group (adds hyphen)
+    ([aáeéíoóú][aáeéíoóú])|
+    # 8: umlaut 'u' diphthongs
+    (ü[iíaeo])|
+    # 9: Explicit hiatus with umlaut vowels, first part
+    ([aeiou][äëïöü])|
+    #10: Explicit hiatus with umlaut vowels, second part
+    ([üäëïö][a-z])|
+    #11: any char
+    ([a-záéíóúñ])""", re.I | re.U | re.VERBOSE)  # VERBOSE to catch the group
+
+"""
+Rhythmical Analysis
+"""
+SPACE = "SPACE"
+STRONG_VOWELS = set("aeoáéóÁÉÓAEO")
+WEAK_VOWELS = set("iuüíúIÍUÜÚ")
+LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚyY")
+LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhyYH")
+
+STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti",
+                                     "un"}
+
+UNSTRESSED_UNACCENTED_MONOSYLLABLES = {'de', 'el', 'la', 'las', 'le', 'les',
+                                       'lo', 'los',
+                                       'mas', 'me', 'mi', 'nos', 'os', 'que',
+                                       'se', 'si',
+                                       'su', 'tan', 'te', 'tu', "tus", "oh"}
+
+UNSTRESSED_FORMS = {"ay", "don", "doña", "aun", "que", "cual", "quien", "donde",
+                    "cuando", "cuanto", "como", "cuantas", "cuantos"}
+
+STRESSED_PRON = {"mío", "mía", "míos", "mías", "tuyo", "tuya", "tuyos",
+                 "tuyas", "suyo", "suya", "suyos", "suyas", "todo"}
+
+POSSESSIVE_PRON_UNSTRESSED = {"nuestro", "nuestra", "nuestros", "nuestras",
+                              "vuestro", "vuestra", "vuestros", "vuestras"}
+
+"""
+Regular expressions and rules for syllabification exceptions
+"""
+
+# Words starting with prefixes SIN-/DES- followed by consonant "destituir"
+PREFIX_DES_WITH_CONSONANT_RE = (
+    re.compile("^(des)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
+
+# Words starting with prefixes SIN-/DES- followed by consonant "sinhueso"
+PREFIX_SIN_WITH_CONSONANT_RE = (
+    re.compile("^(sin)([bcdfgjklmhnñpqrstvxyz].*)", re.I | re.U))
+
+# Group consonant+[hlr] with exceptions for ll
+CONSONANT_GROUP = (re.compile("(.*[hmnqsw])([hlr][aeiouáéíóú].*)", re.I | re.U))
+CONSONANT_GROUP_EXCEPTION_LL = (
+    re.compile("(.*[hlmnqsw])([hr][aeiouáéíóú].*)", re.I | re.U))
+CONSONANT_GROUP_EXCEPTION_DL = (
+    re.compile("(.*[d])([l][aeiouáéíóú].*)", re.I | re.U))
+
+# Group vowel+ w + vowel
+W_VOWEL_GROUP = (re.compile("(.*[aeiouáéíóú])(w[aeiouáéíóú].*)", re.I | re.U))
+
+# Post-syllabification exceptions for consonant clusters and diphthongs
+# Explicitit hiatus on first vowel
+HIATUS_FIRST_VOWEL_RE = (re.compile(
+    "(?:(.*-)|^)([äëïö]|[^g]ü)([aeiouúáéíó].*)",
+    re.I | re.U | re.VERBOSE))
+
+# Consonant cluster. Example: 'cneorácea'
+CONSONANT_CLUSTER_RE = (re.compile(
+    "(?:(.*-)|^)([mpgc])-([bcdfghjklmñnpqrstvwxyz][aeioáéíó].*)",
+    re.I | re.U | re.VERBOSE))
+
+# Lowering diphthong. Example: 'ahijador'
+LOWERING_DIPHTHONGS_WITH_H = (
+    re.compile(
+        """((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)
+        ([aeo])-(h[iu](?![aeoiuíúáéó]).*)""",
+        re.I | re.U | re.VERBOSE))
+
+# Lowering diphthong. Example: 'buhitiho'
+RAISING_DIPHTHONGS_WITH_H = (
+    re.compile(
+        """((?:.*-|^)(?:qu|[bcdfghjklmñnpqrstvwxyz]+)?)
+        ([iu])-(h[aeiouáéó](?![aeoáéiuíú]).*)""",
+        re.I | re.U | re.VERBOSE))
+
 """
 Exceptions for foreign words in Spanish that do not follow
 standard Spanish syllabification rules
