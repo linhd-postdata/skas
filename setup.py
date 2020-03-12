@@ -41,7 +41,7 @@ def read(*names, **kwargs):
 
 setup(
     name='rantanplan',
-    version='0.4.1',
+    version='0.4.2',
     license='Apache Software License 2.0',
     description='Scansion tool for Spanish texts',
     long_description='%s\n%s' % (

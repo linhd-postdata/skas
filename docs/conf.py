@@ -26,7 +26,7 @@ project = 'rantanplan'
 year = '2019'
 author = 'LINHD POSTDATA Project'
 copyright = '{0}, {1}'.format(year, author)
-version = release = '0.1.0'
+version = release = '0.4.2'
 
 pygments_style = 'trac'
 templates_path = ['.']
