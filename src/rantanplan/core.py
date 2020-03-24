@@ -725,8 +725,26 @@ def generate_liaison_positions(syllables, liaison):
     liaison_indices = [
         index for index, position in enumerate(positions) if position
     ]
+    # Prioritize single liaisons
+    non_single_liaisons = []
     for combination in combinations:
         liaison_positions = [0] * len(positions)
         for index, liaison_index in enumerate(liaison_indices):
             liaison_positions[liaison_index] = combination[index]
-        yield liaison_positions
+        if has_single_liaisons(liaison_positions):
+            yield liaison_positions
+        else:
+            non_single_liaisons.append(liaison_positions)
+    for liaison_position in non_single_liaisons:
+        yield liaison_position
+
+
+def has_single_liaisons(liaisons):
+    """Checks whether liaisons (a list of 1's and 0's) has consecutive liaisons
+        (1's) or not
+
+    :param liaisons: List of possible liaisons to apply per phonological group
+    :return: True if no consecutive liaisons, False otherwise
+    :rtype: bool
+    """
+    return not any(i == j == 1 for i, j in zip(liaisons, liaisons[1:]))
