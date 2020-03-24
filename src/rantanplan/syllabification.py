@@ -1105,6 +1105,7 @@ ALTERNATIVE_SYLLABIFICATION = {
     'hiatos': (['hia', 'tos'], [(['hi', 'a', 'tos'], (0, 1))]),
     'homosexual': (['ho', 'mo', 'se', 'xual'],
                    [(['ho', 'mo', 'se', 'xu', 'al'], (3, 4))]),
+    'ilión': (['i', 'lión'], [(['i', 'li', 'ón'], (0, 1))]),
     'inactual': (['i', 'nac', 'tual'], [(['i', 'nac', 'tu', 'al'], (2, 3))]),
     'incestuoso': (['in', 'ces', 'tuo', 'so'],
                    [(['in', 'ces', 'tu', 'o', 'so'], (2, 3))]),
@@ -1463,5 +1464,4 @@ ALTERNATIVE_SYLLABIFICATION = {
     'visual': (['vi', 'sual'], [(['vi', 'su', 'al'], (1, 2))]),
     'visuales': (['vi', 'sua', 'les'], [(['vi', 'su', 'a', 'les'], (1, 2))]),
     'viudo': (['viu', 'do'], [(['vi', 'u', 'do'], (0, 1))]),
-    'ilión': (['i', 'lión'], [(['i', 'li', 'ón'], (0, 1))]),
     'viudos': (['viu', 'dos'], [(['vi', 'u', 'dos'], (0, 1))])}
