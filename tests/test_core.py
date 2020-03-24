@@ -21,6 +21,7 @@ from rantanplan.core import get_stresses
 from rantanplan.core import get_syllables_word_end
 from rantanplan.core import get_word_stress
 from rantanplan.core import get_words
+from rantanplan.core import has_single_liaisons
 from rantanplan.core import have_prosodic_liaison
 from rantanplan.core import is_paroxytone
 from rantanplan.core import spacy_tag_to_dict
@@ -1121,3 +1122,15 @@ def test_apply_exception_rules_consonan_w_vowel():
     word = "kiwi"
     output = "ki-wi"
     assert apply_exception_rules(word) == output
+
+
+def test_has_single_liaisons_false():
+    liaisons = [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0]
+    output = has_single_liaisons(liaisons)
+    assert not output
+
+
+def test_has_single_liaisons_true():
+    liaisons = [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    output = has_single_liaisons(liaisons)
+    assert output

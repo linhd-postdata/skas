@@ -60,7 +60,7 @@ UNSTRESSED_UNACCENTED_MONOSYLLABLES = {'de', 'el', 'la', 'las', 'le', 'les',
                                        'lo', 'los',
                                        'mas', 'me', 'mi', 'nos', 'os', 'que',
                                        'se', 'si',
-                                       'su', 'tan', 'te', 'tu', "tus", "oh"}
+                                       'su', 'tan', 'te', 'tu', "tus", "oh", "pues"}
 
 UNSTRESSED_FORMS = {"ay", "don", "doña", "aun", "que", "cual", "quien", "donde",
                     "cuando", "cuanto", "como", "cuantas", "cuantos"}
@@ -1327,6 +1327,10 @@ ALTERNATIVE_SYLLABIFICATION = {
     'sexuados': (['se', 'xua', 'dos'], [(['se', 'xu', 'a', 'dos'], (1, 2))]),
     'sexual': (['se', 'xual'], [(['se', 'xu', 'al'], (1, 2))]),
     'suave': (['sua', 've'], [(['su', 'a', 've'], (0, 1))]),
+    'suntuoso': (['sun', 'tuo', 'so'], [(['sun', 'tu', 'o', 'so'], (2, 3))]),
+    'suntuosa': (['sun', 'tuo', 'sa'], [(['sun', 'tu', 'o', 'sa'], (2, 3))]),
+    'suntuosos': (['sun', 'tuo', 'sos'], [(['sun', 'tu', 'o', 'sos'], (2, 3))]),
+    'suntuosas': (['sun', 'tuo', 'sas'], [(['sun', 'tu', 'o', 'sas'], (2, 3))]),
     'televisual': (['te', 'le', 'vi', 'sual'],
                    [(['te', 'le', 'vi', 'su', 'al'], (3, 4))]),
     'textual': (['tex', 'tual'], [(['tex', 'tu', 'al'], (1, 2))]),
@@ -1451,8 +1455,13 @@ ALTERNATIVE_SYLLABIFICATION = {
     'viajares': (['via', 'ja', 'res'], [(['vi', 'a', 'ja', 'res'], (0, 1))]),
     'viaje': (['via', 'je'], [(['vi', 'a', 'je'], (0, 1))]),
     'viajes': (['via', 'jes'], [(['vi', 'a', 'jes'], (0, 1))]),
-    'virtual': (['vir', 'tual'], [(['vir', 'tu', 'al'], (2, 2))]),
+    'virtual': (['vir', 'tual'], [(['vir', 'tu', 'al'], (2, 3))]),
+    'virtuoso': (['vir', 'tuo', 'so'], [(['vir', 'tu', 'o', 'so'], (2, 3))]),
+    'virtuosa': (['vir', 'tuo', 'sa'], [(['vir', 'tu', 'o', 'sa'], (2, 3))]),
+    'virtuosos': (['vir', 'tuo', 'sos'], [(['vir', 'tu', 'o', 'sos'], (2, 3))]),
+    'virtuosas': (['vir', 'tuo', 'sas'], [(['vir', 'tu', 'o', 'sas'], (2, 3))]),
     'visual': (['vi', 'sual'], [(['vi', 'su', 'al'], (1, 2))]),
     'visuales': (['vi', 'sua', 'les'], [(['vi', 'su', 'a', 'les'], (1, 2))]),
     'viudo': (['viu', 'do'], [(['vi', 'u', 'do'], (0, 1))]),
+    'ilión': (['i', 'lión'], [(['i', 'li', 'ón'], (0, 1))]),
     'viudos': (['viu', 'dos'], [(['vi', 'u', 'dos'], (0, 1))])}
