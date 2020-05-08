@@ -64,9 +64,7 @@ def is_seguidilla(lengths):
         for i in (1, 3):
             if 7 > lengths[i] > 3:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_chamberga(lengths):
@@ -87,9 +85,7 @@ def is_chamberga(lengths):
         for i in (4, 6, 8):
             if 6 > lengths[i] > 2:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_seguidilla_gitana(lengths):
@@ -106,9 +102,7 @@ def is_seguidilla_gitana(lengths):
                 correct_lines += 1
         if 13 > lengths[2] > 9:
             correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_cuarteto_lira_a(lengths):
@@ -126,9 +120,7 @@ def is_cuarteto_lira_a(lengths):
         for i in (1, 3):
             if 8 > lengths[i] > 5:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_cuarteto_lira_b(lengths):
@@ -146,9 +138,7 @@ def is_cuarteto_lira_b(lengths):
         for i in (1, 3):
             if 13 > lengths[i] > 8:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_estrofa_safica(lengths):
@@ -165,9 +155,7 @@ def is_estrofa_safica(lengths):
                 correct_lines += 1
         if 7 > lengths[3] > 3:
             correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_estrofa_safica_unamuno(lengths):
@@ -186,9 +174,7 @@ def is_estrofa_safica_unamuno(lengths):
             correct_lines += 1
         if 7 > lengths[3] > 3:
             correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_estrofa_francisco_de_la_torre(lengths):
@@ -205,9 +191,7 @@ def is_estrofa_francisco_de_la_torre(lengths):
                 correct_lines += 1
         if 9 > lengths[3] > 5:
             correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_endecha_real(lengths):
@@ -226,9 +210,7 @@ def is_endecha_real(lengths):
             if i % 4 == 0:
                 if 13 > lengths[i-1] > 8:
                     correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_lira(lengths):
@@ -246,9 +228,7 @@ def is_lira(lengths):
         for i in (1, 4):
             if 13 > lengths[i] > 8:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_estrofa_manriquena(lengths):
@@ -266,9 +246,7 @@ def is_estrofa_manriquena(lengths):
         for i in (2, 5):
             if 6 > lengths[i] > 2:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_sexteto_lira_a(lengths):
@@ -286,9 +264,7 @@ def is_sexteto_lira_a(lengths):
         for i in (1, 3, 5):
             if 13 > lengths[i] > 9:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_sexteto_lira_b(lengths):
@@ -306,9 +282,7 @@ def is_sexteto_lira_b(lengths):
         for i in (1, 4):
             if 8 > lengths[i] > 5:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_septeto_lira(lengths):
@@ -326,9 +300,7 @@ def is_septeto_lira(lengths):
         for i in (1, 3, 6):
             if 13 > lengths[i] > 9:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 def is_ovillejo(lengths):
@@ -346,9 +318,7 @@ def is_ovillejo(lengths):
         for i in (1, 3, 5):
             if 6 > lengths[i] > 2:
                 correct_lines += 1
-    if correct_lines == number_of_verses:
-        return True
-    return False
+    return correct_lines == number_of_verses
 
 
 ASSONANT_RHYME = "assonant"
