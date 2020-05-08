@@ -1,3 +1,3 @@
 Click>=7.0
 spacy>=2.2
-spacy_affixes
+spacy-affixes>=0.1.4

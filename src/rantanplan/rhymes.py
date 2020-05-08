@@ -1,80 +1,35 @@
 # -*- coding: utf-8 -*-
 import re
-import statistics
 import string
 
 from spacy_affixes.utils import strip_accents
 
-ASSONANT_RHYME = "assonant"
-CONSONANT_RHYME = "consonant"
+from rantanplan.structures import ASSONANT_RHYME
+from rantanplan.structures import CONSONANT_RHYME
+from rantanplan.structures import STRUCTURES
+
 CONSONANTS = r"bcdfghjklmnñpqrstvwxyz"
 UNSTRESSED_VOWELS = r"aeiou"
 STRESSED_VOWELS = r"áéíóúäëïöü"
+TILDED_VOWELS = r"áéíóú"
 WEAK_VOWELS = r"iuïü"
 STRONG_VOWELS = r"aeoáéó"
 WEAK_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{STRONG_VOWELS}])',
                             re.U | re.I)
 VOWELS = fr"{UNSTRESSED_VOWELS}{STRESSED_VOWELS}"
 STRESSED_VOWELS_RE = re.compile(fr'[{STRESSED_VOWELS}]', re.U | re.I)
+TILDED_VOWELS_RE = re.compile(fr'[{TILDED_VOWELS}]', re.U | re.I)
 CONSONANTS_RE = re.compile(fr'[{CONSONANTS}]+', re.U | re.I)
 INITIAL_CONSONANTS_RE = re.compile(fr'^[{CONSONANTS}]+', re.U | re.I)
 DIPHTHONG_H_RE = re.compile(fr'([{VOWELS}])h([{VOWELS}])', re.U | re.I)
 DIPHTHONG_Y_RE = re.compile(fr'([{VOWELS}])h?y([^{VOWELS}])', re.U | re.I)
 GROUP_GQ_RE = re.compile(fr'([qg])u([ei])', re.U | re.I)
-# Stanza structures where each tuple is defined as follows:
-# (
-#     CONSONANT_RHYME | ASSONANT_RHYME,
-#     "structure name",
-#     r".*",  # regular expression to match the rhymed line pattern
-#     lambda lengths: True  # function checking a condition on line lengths
-# )
-# Structures will be checked in order of definition, the first one to match
-# will be chosen.
-STRUCTURES = (
-    (
-        CONSONANT_RHYME,
-        "sonnet",
-        r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2}|[cde]{6})",
-        lambda lengths: all(14 > length > 9 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
-        "couplet",
-        r"aa",
-        lambda _: True
-    ), (
-        CONSONANT_RHYME,
-        "lorcaic_octet",
-        r"(-a-b-a-b)",
-        lambda _: True
-    ), (
-        ASSONANT_RHYME,
-        "romance",
-        r"((.b)+)|((.a)+)",
-        lambda lengths: statistics.median(lengths) == 8
-    ), (
-        ASSONANT_RHYME,
-        "romance arte mayor",
-        r"((.b)+)|((.a)+)",
-        lambda lengths: 11 <= statistics.median(lengths) <= 14
-     ), (
-        ASSONANT_RHYME,
-        "haiku",
-        r".*",
-        lambda lengths: re.compile(r"(575)+").match("".join(
-            [str(length)for length in lengths]
-        ))
-    ), (
-        ASSONANT_RHYME,
-        "couplet",
-        r"aa",
-        lambda _: True
-    ),
-)
-
-STRUCTURES_LENGTH = {
-    "sonnet": 14 * [11],
-    "haiku": [5, 7, 5]
-}
+HOMOPHONES = [
+    ("v", "b"), ("ll", "y"),
+    ("ze", "ce"), ("zi", "ci"),
+    ("qui", "ki"), ("que", "ke"),
+    ("ge", "je"), ("gi", "ji"),
+]
 
 
 def get_stressed_endings(lines):
@@ -82,8 +37,15 @@ def get_stressed_endings(lines):
     from a scansion lines list of tokens as input"""
     endings = []
     for line in lines:
-        syllables = [phonological_group["syllable"]
-                     for phonological_group in line["phonological_groups"]]
+        syllables = []
+        for phonological_group in line["phonological_groups"]:
+            # Break groups on last synalepha index position if present
+            if "synalepha_index" in phonological_group:
+                synalepha_index = phonological_group["synalepha_index"][-1] + 1
+                syllable = phonological_group["syllable"][synalepha_index:]
+            else:
+                syllable = phonological_group["syllable"]
+            syllables.append(syllable)
         syllables_count = len(syllables)
         syllables_stresses = [syllable["is_stressed"]
                               for syllable in line["phonological_groups"]]
@@ -109,14 +71,31 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     unique = set()
     # Clean consonants as needed and assign numeric codes
     for stressed_ending, _, stressed_position in stressed_endings:
-        stressed_ending_upper = stressed_ending[stressed_position].upper()
-        stressed_ending[stressed_position] = stressed_ending_upper
+        syllable = stressed_ending[stressed_position]
+        # If there is a tilde, only upper case that vowel
+        match = TILDED_VOWELS_RE.search(syllable)
+        if match:
+            span = match.span()
+            syllable = (syllable[:span[0]] + match.group().upper()
+                        + syllable[span[1]:])
+        # Otherwise, only the final if there is a diphthong
+        else:
+            syllable = syllable.upper()
+        stressed_ending[stressed_position] = syllable
         # TODO: Other forms of relaxation should be tried iteratively, such as
-        # lava ~ naba, vaya ~ valla, ceceo ~ zezeo, Venus ~ menos,
-        # (also cases changing `i` for `e`), etc.
+        # changing `i` for `e`, etc.
         if relaxation:
-            ending = "".join(WEAK_VOWELS_RE.sub(r"\1", syll, count=1)
-                             for syll in stressed_ending)
+            relaxed_endings = []
+            for syllable in stressed_ending:
+                relaxed_syllable = WEAK_VOWELS_RE.sub(r"\1", syllable, count=1)
+                # Homophones
+                for find, change in HOMOPHONES:
+                    relaxed_syllable = relaxed_syllable.replace(find, change)
+                    relaxed_syllable = relaxed_syllable.replace(
+                        find.upper(), change.upper()
+                    )
+                relaxed_endings.append(relaxed_syllable)
+            ending = "".join(relaxed_endings)
         else:
             ending = "".join(stressed_ending)
         ending = GROUP_GQ_RE.sub(r"\1\2", ending)
@@ -154,6 +133,7 @@ def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
         if rhyme in unrhymed_verses:
             rhyme_letter = -1  # unrhymed verse
             endings.append('')  # do not track unrhymed verse endings
+            rhymes.append(rhyme_letter)
         else:
             if rhyme not in letters:
                 letters[rhyme] = len(letters)
@@ -164,9 +144,12 @@ def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
                     and index - last_found[rhyme] > offset):
                 rhymes[last_found[rhyme]] = -1  # unrhymed verse
                 endings[last_found[rhyme]] = ''  # unrhymed verse ending
+                endings.append('')
+                rhymes.append(-1)
+            else:
+                endings.append(codes[rhyme])
+                rhymes.append(rhyme_letter)
             last_found[rhyme] = index
-            endings.append(codes[rhyme])
-        rhymes.append(rhyme_letter)
     return rhymes, endings
 
 
@@ -246,7 +229,7 @@ def search_structure(rhyme, rhythmical_lengths, structure_key, structures=None):
         structures = STRUCTURES
     for index, (key, _, structure, func) in enumerate(structures):
         if (key == structure_key
-                and re.compile(structure).match(rhyme)
+                and re.compile(structure, re.VERBOSE).fullmatch(rhyme)
                 and func(rhythmical_lengths)):
             return index
 
