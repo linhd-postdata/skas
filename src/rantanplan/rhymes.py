@@ -23,7 +23,7 @@ CONSONANTS_RE = re.compile(fr'[{CONSONANTS}]+', re.U | re.I)
 INITIAL_CONSONANTS_RE = re.compile(fr'^[{CONSONANTS}]+', re.U | re.I)
 DIPHTHONG_H_RE = re.compile(fr'([{VOWELS}])h([{VOWELS}])', re.U | re.I)
 DIPHTHONG_Y_RE = re.compile(fr'([{VOWELS}])h?y([^{VOWELS}])', re.U | re.I)
-GROUP_GQ_RE = re.compile(fr'([qg])u([ei])', re.U | re.I)
+GROUP_GQ_RE = re.compile(r'([qg])u([ei])', re.U | re.I)
 HOMOPHONES = [
     ("v", "b"), ("ll", "y"),
     ("ze", "ce"), ("zi", "ci"),
