@@ -14,8 +14,8 @@ from itertools import product
 from spacy.tokens import Doc
 
 from .pipeline import load_pipeline
-from .rhymes import STRUCTURES_LENGTH
 from .rhymes import analyze_rhyme
+from .structures import STRUCTURES_LENGTH
 from .syllabification import ALTERNATIVE_SYLLABIFICATION
 from .syllabification import CONSONANT_CLUSTER_RE
 from .syllabification import CONSONANT_GROUP

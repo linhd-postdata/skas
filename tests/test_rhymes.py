@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from rantanplan.rhymes import STRUCTURES
+from rantanplan.core import get_scansion
 from rantanplan.rhymes import analyze_rhyme
 from rantanplan.rhymes import assign_letter_codes
 from rantanplan.rhymes import get_clean_codes
@@ -13,6 +13,7 @@ from rantanplan.rhymes import get_stressed_endings
 from rantanplan.rhymes import rhyme_codes_to_letters
 from rantanplan.rhymes import search_structure
 from rantanplan.rhymes import split_stress
+from rantanplan.structures import STRUCTURES
 
 
 @pytest.fixture
@@ -98,10 +99,12 @@ def test_get_stressed_endings():
 def test_get_clean_codes(stressed_endings):
     # Consonant rhyme by default
     output = (
-        {0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdria', 4: 'Ados', 5: 'Ado',
-         6: 'ION', 7: 'Ia', 8: 'ON', 9: 'Illa', 10: 'Ero'},
-        [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 8],
-        {0, 2, 3, 4, 5, 6, 7, 9, 10},
+        {
+            0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdria', 4: 'Ados',
+            5: 'Ado', 6: 'iOn', 7: 'Ia', 8: 'ON', 9: 'Illa', 10: 'Ero',
+            11: 'On'},
+        [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 11],
+        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
     )
     assert get_clean_codes(stressed_endings) == output
     assert get_clean_codes(stressed_endings, False, False) == output
@@ -109,9 +112,10 @@ def test_get_clean_codes(stressed_endings):
 
 def test_get_clean_codes_assonance(stressed_endings):
     output = (
-        {0: 'Ao', 1: 'O', 2: 'Aa', 3: 'Aia', 4: 'IO', 5: 'Ia', 6: 'Eo'},
+        {
+            0: 'Ao', 1: 'O', 2: 'Aa', 3: 'Aia', 4: 'iO', 5: 'Ia', 6: 'Eo'},
         [0, 1, 2, 1, 3, 1, 0, 1, 0, 4, 5, 1, 5, 1, 6, 1],
-        {2, 3, 4, 6},
+        {2, 3, 4, 6}
     )
     assert get_clean_codes(stressed_endings, assonance=True) == output
     assert get_clean_codes(stressed_endings, True, False) == output
@@ -119,10 +123,10 @@ def test_get_clean_codes_assonance(stressed_endings):
 
 def test_get_clean_codes_relaxation(stressed_endings):
     output = (
-        {0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdra', 4: 'Ados', 5: 'Ado',
-         6: 'ON', 7: 'Ia', 8: 'Illa', 9: 'Ero'},
-        [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 6, 8, 1, 9, 6],
-        {0, 2, 3, 4, 5, 7, 8, 9},
+        ({0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdra', 4: 'Ados', 5: 'Ado',
+          6: 'On', 7: 'Ia', 8: 'ON', 9: 'Iya', 10: 'Ero'},
+         [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 6],
+         {0, 2, 3, 4, 5, 7, 8, 9, 10})
     )
     assert get_clean_codes(stressed_endings, relaxation=True) == output
     assert get_clean_codes(stressed_endings, False, True) == output
@@ -169,6 +173,19 @@ def get_assign_letter_codes_offset():
     assert assign_letter_codes(*clean_codes, offset=4) == output
 
 
+def test_assign_letter_codes_exceded_offset():
+    clean_codes = (
+        {0: 'Aa', 1: 'Oe', 2: 'Ia', 3: 'Oa'},
+        [0, 1, 2, 1, 3, 0, 3],
+        {2}
+    )
+    output = (
+        [-1, 1, -1, 1, 2, -1, 2],
+        ['', 'Oe', '', 'Oe', 'Oa', '', 'Oa']
+    )
+    assert assign_letter_codes(*clean_codes, offset=4) == output
+
+
 def test_sort_rhyme_letters():
     rhymes_codes = [-1, 1, 2, 1, 2, 1, 0, 1, 0, 1, 3, 1, 3, 1, -1, 1]
     output = ['-', 'a', 'b', 'a', 'b', 'a', 'c', 'a',
@@ -196,15 +213,13 @@ def test_split_stress():
 
 def test_get_rhymes(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', 'a',
-         '-', '-', '-', 'b', '-', 'a', '-', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or',
-         '', '', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2, 0, -2],
+        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', 'a',
+         '-', '-'],
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '', 'or', '',
+         ''],
+        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, -2, 0, 0]
     )
-    assert get_rhymes(
-        stressed_endings
-    ) == output
+    assert get_rhymes(stressed_endings) == output
 
 
 def test_get_rhymes_assonance(stressed_endings):
@@ -215,22 +230,17 @@ def test_get_rhymes_assonance(stressed_endings):
          'ao', '', 'ia', 'o', 'ia', 'o', '', 'o'],
         [-2, -1, 0, -1, 0, -1, -2, -1, -2, 0, -2, -1, -2, -1, 0, -1],
     )
-    assert get_rhymes(
-        stressed_endings, assonance=True
-    ) == output
+    assert get_rhymes(stressed_endings, assonance=True) == output
 
 
 def test_get_rhymes_relaxation(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', 'a',
-         '-', 'b', '-', 'b', '-', 'a', '-', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or',
-         '', 'on', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2],
+        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', '-', 'b', '-', '-', '-', 'a',
+         '-', 'b'],
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or', '',
+         'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
     )
-    assert get_rhymes(
-        stressed_endings, relaxation=True
-    ) == output
+    assert get_rhymes(stressed_endings, relaxation=True) == output
 
 
 def test_get_rhymes_assonance_relaxation(stressed_endings):
@@ -248,24 +258,20 @@ def test_get_rhymes_assonance_relaxation(stressed_endings):
 
 def test_get_rhymes_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', '-',
-         '-', '-', '-', 'b', '-', 'a', '-', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', '',
-         '', '', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, -2, 0, -2, 0, -2],
+        ['-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', '-', '-', '-',
+         '-', '-'],
+        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
+        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     )
-    assert get_rhymes(
-        stressed_endings, offset=4
-    ) == output
+    assert get_rhymes(stressed_endings, offset=4) == output
 
 
 def test_get_rhymes_assonance_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', 'b', 'a',
-         'b', '-', 'c', 'a', 'c', 'a', '-', 'a'],
-        ['', 'o', '', 'o', '', 'o', 'ao', 'o',
-         'ao', '', 'ia', 'o', 'ia', 'o', '', 'o'],
-        [0, -1, 0, -1, 0, -1, -2, -1, -2, 0, -2, -1, -2, -1, 0, -1],
+        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', 'b', '-', 'c', 'a', 'c', 'a',
+         '-', 'a'],
+        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o', '',
+         'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4
@@ -274,11 +280,10 @@ def test_get_rhymes_assonance_offset(stressed_endings):
 
 def test_get_rhymes_relaxation_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', '-',
-         '-', 'b', '-', 'b', '-', 'a', '-', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', '',
-         '', 'on', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2, 0, -2, 0, -2],
+        ['-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', '-', '-', '-',
+         '-', '-'],
+        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
+        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, offset=4
@@ -287,11 +292,11 @@ def test_get_rhymes_relaxation_offset(stressed_endings):
 
 def test_get_rhymes_assonance_relaxation_offset(stressed_endings):
     output = (
-        ['-', 'a', 'b', 'a', 'b', 'a', 'c', 'a',
-         'c', 'a', 'd', 'a', 'd', 'a', '-', 'a'],
-        ['', 'o', 'aa', 'o', 'aa', 'o', 'ao', 'o',
-         'ao', 'o', 'ia', 'o', 'ia', 'o', '', 'o'],
-        [0, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, 0, -1],
+        ['-', 'a', 'b', 'a', 'b', 'a', '-', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
+         '-', 'a'],
+        ['', 'o', 'aa', 'o', 'aa', 'o', '', 'o', 'ao', 'o', 'ia', 'o', 'ia',
+         'o', '', 'o'],
+        [0, -1, -2, -1, -2, -1, 0, -1, -2, -1, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, relaxation=True, offset=4
@@ -300,11 +305,10 @@ def test_get_rhymes_assonance_relaxation_offset(stressed_endings):
 
 def test_get_rhymes_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', 'a',
-         '$', '$', '$', 'b', '$', 'a', '$', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or',
-         '', '', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2, 0, -2],
+        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', 'a',
+         '$', '$'],
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '', 'or', '',
+         ''], [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, -2, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, unrhymed_verse_symbol="$"
@@ -326,11 +330,10 @@ def test_get_rhymes_assonance_unrhymed(stressed_endings):
 
 def test_get_rhymes_relaxation_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', 'a',
-         '$', 'b', '$', 'b', '$', 'a', '$', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or',
-         '', 'on', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2],
+        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', '$', 'b', '$', '$', '$', 'a',
+         '$', 'b'],
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or', '',
+         'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, unrhymed_verse_symbol="$"
@@ -353,11 +356,10 @@ def test_get_rhymes_assonance_relaxation_unrhymed(stressed_endings):
 
 def test_get_rhymes_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', '$',
-         '$', '$', '$', 'b', '$', 'a', '$', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', '',
-         '', '', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, -2, 0, -2, 0, -2],
+        ['$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$', '$', '$',
+         '$', '$'],
+        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
+        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, offset=4, unrhymed_verse_symbol="$"
@@ -366,11 +368,10 @@ def test_get_rhymes_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_assonance_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', 'b', 'a',
-         'b', '$', 'c', 'a', 'c', 'a', '$', 'a'],
-        ['', 'o', '', 'o', '', 'o', 'ao', 'o',
-         'ao', '', 'ia', 'o', 'ia', 'o', '', 'o'],
-        [0, -1, 0, -1, 0, -1, -2, -1, -2, 0, -2, -1, -2, -1, 0, -1],
+        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', 'b', '$', 'c', 'a', 'c', 'a',
+         '$', 'a'],
+        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o', '',
+         'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4, unrhymed_verse_symbol="$"
@@ -379,11 +380,10 @@ def test_get_rhymes_assonance_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_relaxation_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', '$',
-         '$', 'b', '$', 'b', '$', 'a', '$', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', '',
-         '', 'on', '', 'on', '', 'or', '', 'on'],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2, 0, -2, 0, -2],
+        ['$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$', '$', '$',
+         '$', '$'],
+        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
+        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, offset=4, unrhymed_verse_symbol="$"
@@ -392,15 +392,35 @@ def test_get_rhymes_relaxation_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_assonance_relaxation_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', 'b', 'a', 'b', 'a', 'c', 'a',
-         'c', 'a', 'd', 'a', 'd', 'a', '$', 'a'],
-        ['', 'o', 'aa', 'o', 'aa', 'o', 'ao', 'o',
-         'ao', 'o', 'ia', 'o', 'ia', 'o', '', 'o'],
-        [0, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, 0, -1],
+        ['$', 'a', 'b', 'a', 'b', 'a', '$', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
+         '$', 'a'],
+        ['', 'o', 'aa', 'o', 'aa', 'o', '', 'o', 'ao', 'o', 'ia', 'o', 'ia',
+         'o', '', 'o'],
+        [0, -1, -2, -1, -2, -1, 0, -1, -2, -1, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, relaxation=True, offset=4,
         unrhymed_verse_symbol="$"
+    ) == output
+
+
+def test_get_rhymes_assonance_relaxation_exceded_offset_unrhymed():
+    stressed_endings = [
+        (['car', 'cha'], 7, -2),
+        (['po', 'bre'], 5, -2),
+        (['días'], 6, -1),
+        (['no', 'ches'], 5, -2),
+        (['bo', 'lla'], 5, -2),
+        (['car', 'cha'], 6, -2),
+        (['don', 'da'], 5, -2)
+    ]
+    output = (
+        ['-', 'a', '-', 'a', 'b', '-', 'b'],
+        ['', 'oe', '', 'oe', 'oa', '', 'oa'],
+        [0, -2, 0, -2, -2, 0, -2]
+    )
+    assert get_rhymes(
+        stressed_endings, assonance=True, relaxation=True, offset=4
     ) == output
 
 
@@ -470,3 +490,258 @@ def test_analyze_rhyme_romance(romance):
     déle Dios mal galardón.
     """
     assert analyze_rhyme(romance)["name"] == 'romance'
+
+
+def test_rhyme_analysis_tercetillo_consonant():
+    poem = """Poderoso visionario,
+    raro ingenio temerario,
+    por ti enciendo mi incensario."""
+    output = ("tercetillo", "consonant")
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert (input_poem[0]["structure"], input_poem[0]["rhyme_type"]) == output
+
+
+def test_rhyme_analysis_solea():
+    poem = """Poderoso es mi marido,
+    raro ingenio temeramos,
+    por ti enciendo mi inciensito."""
+    output = ("soleá", "assonant")
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert (input_poem[0]["structure"], input_poem[0]["rhyme_type"]) == output
+
+
+def test_rhyme_analysis_terceto():
+    poem = """Cumpliéronse de entrambos los deseos,
+    pues ella dio mil glorias a Agustino,
+    y él a alumbrarla con su pluma vino."""
+    output = "terceto"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_terceto_monorrimo():
+    poem = """Y abrillantó a mi espíritu la cumbre
+    con fugaz cuanto rica certidumbre,
+    como con tintas de refleja lumbre."""
+    output = "terceto_monorrimo"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_redondilla_consonant():
+    poem = """Cerró la infancia su puerta
+    a sus damas y a su tío,
+    achacando este desvío
+    a una enfermedad incierta."""
+    output = ("redondilla", "consonant")
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert (input_poem[0]["structure"], input_poem[0]["rhyme_type"]) == output
+
+
+def test_rhyme_analysis_redondilla_assonant():
+    poem = """Cerró la infancia su pueda
+    a sus damas y a su piro,
+    achacando este desvino
+    a una enfermedad incierta."""
+    output = ("redondilla", "assonant")
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert (input_poem[0]["structure"], input_poem[0]["rhyme_type"]) == output
+
+
+def test_rhyme_analysis_cuarteto():
+    poem = """Si (como el griego afirma en el Cratilo)
+    el nombre es arquetipo de la cosa,
+    en las letras de rosa está la rosa
+    y todo el Nilo en la palabra Nilo."""
+    output = "cuarteto"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_serventesio():
+    poem = """¿Vienes? Me llega aquí, pues que suspiras,
+    un soplo de las mágicas fragancias
+    que hicieran los delirios de las liras
+    en las Grecias, las Romas y las Francias."""
+    output = "serventesio"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_cuaderna_via():
+    poem = """Con sayal de amarguras, de la vida romero,
+    topé tras luenga andanza con la paz de un sendero.
+    Fenecía del día el resplandor postrero.
+    En la cima de un álamo sollozaba un jilguero."""
+    output = "cuaderna_vía"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_cuarteta():
+    poem = """Se desgrana un cristal fino
+    sobre el sueño de una flor;
+    trina el poeta divino...
+    ¡Bien trinado, Ruiseñor!"""
+    output = "cuarteta"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_octava_real():
+    poem = """Bajo la luz plural de los azahares
+    y los limones de los limoneros,
+    tú, la hortelana de los tres lunares.
+    Vas aún sobre un cultivo de luceros.
+    páranse, ya sin hilo, los telares
+    de los fríos gusanos carceleros,
+    presos ya. Y bajo el cuello tus carrillos
+    lácteos se enveran dulces ya, amarillos."""
+    output = "octava_real"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_copla_arte_mayor():
+    poem = """De cándida púrpura su vestidura
+    bien denotava su grand señorío;
+    non le ponía su fausto más brío,
+    nin le privava virtud fermosura:
+    vençíase della su ropa en albura;
+    el ramo de palma su mano sostiene,
+    don que Diana por más rico tiene,
+    más mesurada que toda mesura."""
+    output = "copla_arte_mayor"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_romance_arte_mayor():
+    poem = """Quietud, quietud... Ya la ciudad de oro
+    ha entrado en el misterio de la tarde.
+    La catedral es un gran relicario.
+    La bahía unifica sus cristales
+    en un azul de arcaicas mayúsculas
+    de los antifonarios y misales.
+    Las barcas pescadoras estilizan
+    el blancor de sus velas triangulares
+    y como un eco que dijera: «Ulises»,
+    junta alientos de flores y de sales."""
+    output = "romance_arte_mayor"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_analysis_espinela():
+    poem = """Suele decirme la gente
+    que en parte sabe mi mal,
+    que la causa principal
+    se me ve escrita en la frente;
+    y aunque hago de valiente,
+    luego mi lengua desliza
+    por lo que dora y matiza;
+    que lo que el pecho no gasta
+    ningún disimulo basta
+    a cubrirlo con ceniza."""
+    output = "espinela"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_copla_real():
+    poem = """¡Oh altissima cordura
+    a do todo el bien consiste,
+    yo llena de hermosura
+    de tu divina apostura
+    razón digna me heziste;
+    yo soy diuina en el cielo
+    porque de ti soy mandada;
+    yo soy de tan alto vuelo;
+    yo soy la que en este suelo
+    jamás me conturba nada!"""
+    output = "copla_real"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_silva_arromanzada():
+    poem = """El pensador llegó a la barca negra;
+    y le vieron hundirse
+    en las brumas del lago del Misterio
+    los ojos de los cisnes.
+    Su manto de poeta
+    reconocieron los ilustres lises
+    y el laurel y la espina entremezclados
+    sobre la frente triste.
+    A lo lejos alzábanse los muros
+    de la ciudad teológica, en que vive
+    la sempiterna Paz. La negra barca
+    llegó a la ansiada costa, y el sublime
+    espíritu gozó la suma gracia;
+    y ¡oh Montaigne! Núñez vio la cruz erguirse,
+    y halló al pie de la sacra Vencedora
+    el helado cadáver de la Esfinge."""
+    output = "silva_arromanzada"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_cantar():
+    poem = """Algunos desesperados
+    solo se curan con soga;
+    otros, con siete palabras:
+    la fe se ha puesto de moda."""
+    output = "cantar"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_rhyme_lira():
+    poem = """Si de mi baja lira
+    tanto pudiese el son que en un momento
+    aplacase la ira
+    del animoso viento
+    y la furia del mar y el movimiento."""
+    output = "lira"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_get_stressed_endings_sinalepha():
+    # aplacase la ira
+    lines = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'a', 'is_stressed': False},
+                {'syllable': 'pla', 'is_stressed': False},
+                {'syllable': 'ca', 'is_stressed': True},
+                {'syllable': 'se', 'is_stressed': False,
+                 'is_word_end': True}],
+                'stress_position': -2},
+            {'word': [
+                {'syllable': 'la',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}],
+                'stress_position': 0},
+            {'word': [
+                {'syllable': 'i', 'is_stressed': True},
+                {'syllable': 'ra', 'is_stressed': False,
+                 'is_word_end': True}],
+                'stress_position': -2}],
+            'phonological_groups': [
+                {'syllable': 'a', 'is_stressed': False},
+                {'syllable': 'pla', 'is_stressed': False},
+                {'syllable': 'ca', 'is_stressed': True},
+                {'syllable': 'se', 'is_stressed': False,
+                 'is_word_end': True},
+                {'syllable': 'lai', 'is_stressed': True,
+                 'synalepha_index': [1]},
+                {'syllable': 'ra', 'is_stressed': False,
+                 'is_word_end': True}],
+            'rhythm': {'stress': '--+-+-', 'type': 'pattern', 'length': 6}}
+    ]
+    output = [
+        (["i", "ra"], 6, -2)
+    ]
+    assert get_stressed_endings(lines) == output
