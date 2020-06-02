@@ -6,6 +6,7 @@ import pytest
 import spacy
 
 import rantanplan.core
+from rantanplan.core import _get_scansion
 from rantanplan.core import apply_exception_rules
 from rantanplan.core import apply_exception_rules_post
 from rantanplan.core import clean_phonological_groups
@@ -421,6 +422,7 @@ def test_get_scansion_spacy_doc_text():
         }
     ]
     assert get_scansion(text) == output
+    assert _get_scansion(text) == output
 
 
 def test_get_scansion_rhyme_analysis_sonnet(rhyme_analysis_sonnet):
@@ -439,6 +441,28 @@ def test_get_scansion_rhyme_analysis_sonnet(rhyme_analysis_sonnet):
     que trayendo los hierros a los ojos
     no pueda de la causa arrepentirme."""
     assert get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
+    assert _get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
+
+
+def test_get_scansion_stanzas():
+    poem = """Que se caiga la torre
+    de Valladolid
+    como a mí no me coja,
+    ¿qué se me da a mí?
+
+    -*-
+
+    ¡Cuán solitaria la nación que un día
+    poblara inmensa gente,
+    la nación cuyo imperio se extendía
+    del Ocaso al Oriente!"""
+    # Note that -*- is actually 4 spaces into the line
+    split_on = r"[\s]+-\*-[\s]+"
+    seguidilla, cuarteto_lira = get_scansion(
+        poem, rhyme_analysis=True, split_stanzas_on=split_on
+    )
+    assert seguidilla[0]["structure"] == "seguidilla"
+    assert cuarteto_lira[0]["structure"] == "cuarteto_lira"
 
 
 def test_get_scansion_structures_length():
@@ -472,6 +496,7 @@ def test_get_scansion_structures_length():
         }
     ]
     assert get_scansion(text, rhythmical_lengths=[5]) == output
+    assert _get_scansion(text, rhythmical_lengths=[5]) == output
 
 
 def test_get_scansion_rhyme_analysis_haiku_no_rhyme(haiku):
@@ -479,6 +504,7 @@ def test_get_scansion_rhyme_analysis_haiku_no_rhyme(haiku):
     La tempestad estruja
     los viejos cedros."""
     assert get_scansion(text, rhyme_analysis=True) == haiku
+    assert _get_scansion(text, rhyme_analysis=True) == haiku
 
 
 def test_get_scansion(scansion_sonnet):
@@ -488,6 +514,7 @@ def test_get_scansion(scansion_sonnet):
     «Ya el tiempo nos convida
     A los estudios nobles...»!"""
     assert get_scansion(text, rhythm_format="pattern") == scansion_sonnet
+    assert _get_scansion(text, rhythm_format="pattern") == scansion_sonnet
 
 
 def test_get_scansion_stressed_last_syllable():
@@ -511,6 +538,7 @@ def test_get_scansion_stressed_last_syllable():
             'rhythm': {'stress': '--+-', 'type': 'pattern', 'length': 4}}
     ]
     assert get_scansion(text, rhythm_format="pattern") == output
+    assert _get_scansion(text, rhythm_format="pattern") == output
 
 
 def test_get_scansion_stressed_last_syllable_index_metrical_pattern():
@@ -534,6 +562,7 @@ def test_get_scansion_stressed_last_syllable_index_metrical_pattern():
             'rhythm': {'stress': '3', 'type': 'indexed', 'length': 4}}
     ]
     assert get_scansion(text, rhythm_format="indexed") == output
+    assert _get_scansion(text, rhythm_format="indexed") == output
 
 
 def test_get_scansion_sinaeresis():
@@ -559,6 +588,7 @@ def test_get_scansion_sinaeresis():
             'rhythm': {'stress': '+-', 'type': 'pattern', 'length': 2}}
     ]
     assert get_scansion(text, rhythm_format="pattern") == output
+    assert _get_scansion(text, rhythm_format="pattern") == output
 
 
 def test_get_scansion_affixes():
@@ -586,6 +616,7 @@ def test_get_scansion_affixes():
             'rhythm': {'stress': '--+-', 'type': 'pattern', 'length': 4}}
     ]
     assert get_scansion(text, rhythm_format="pattern") == output
+    assert _get_scansion(text, rhythm_format="pattern") == output
 
 
 def test_get_scansion_sinaeresis_synalepha_affixes():
@@ -627,6 +658,7 @@ def test_get_scansion_sinaeresis_synalepha_affixes():
             'rhythm': {'stress': '--+-+-', 'type': 'pattern', 'length': 6}}
     ]
     assert get_scansion(text, rhythm_format="pattern") == output
+    assert _get_scansion(text, rhythm_format="pattern") == output
 
 
 def test_get_scansion_sinaeresis_synalepha_affixes_index_metrical_pattern():
@@ -668,6 +700,7 @@ def test_get_scansion_sinaeresis_synalepha_affixes_index_metrical_pattern():
             'rhythm': {'stress': '3-5', 'type': 'indexed', 'length': 6}}
     ]
     assert get_scansion(text, rhythm_format="indexed") == output
+    assert _get_scansion(text, rhythm_format="indexed") == output
 
 
 def test_get_scansion_sinaeresis_synalepha_affixes_binary_metrical_pattern():
@@ -709,6 +742,7 @@ def test_get_scansion_sinaeresis_synalepha_affixes_binary_metrical_pattern():
             'rhythm': {'stress': '001010', 'type': 'binary', 'length': 6}}
     ]
     assert get_scansion(text, rhythm_format="binary") == output
+    assert _get_scansion(text, rhythm_format="binary") == output
 
 
 def test_spacy_tag_to_dict():

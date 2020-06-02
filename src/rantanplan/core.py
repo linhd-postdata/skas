@@ -585,7 +585,7 @@ def join_affixes(line):
 
 
 def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
-                 rhythmical_lengths=None):
+                 rhythmical_lengths=None, split_stanzas_on=None):
     """Generates a list of dictionaries for each line
 
     :param text: Full text to be analyzed
@@ -593,6 +593,41 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
     :param rhythm_format: output format for rhythm analysis
     :param rhythmical_lengths: List with explicit rhythmical lengths per line
         that the analysed lines has to meet
+    :param split_stanzas_on: Regular expression to split text in stanzas.
+        Defaults to None for not splitting.
+    :return: list of dictionaries per line
+        (or list of list of dictionaries if split on stanzas)
+    :rtype: list
+    """
+    if split_stanzas_on is None:
+        return _get_scansion(
+            text=text,
+            rhyme_analysis=rhyme_analysis,
+            rhythm_format=rhythm_format,
+            rhythmical_lengths=rhythmical_lengths
+        )
+    else:
+        return [
+            _get_scansion(
+                text=stanza,
+                rhyme_analysis=rhyme_analysis,
+                rhythm_format=rhythm_format,
+                rhythmical_lengths=rhythmical_lengths
+            ) for stanza in re.compile(split_stanzas_on).split(text)
+        ]
+
+
+def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
+                  rhythmical_lengths=None, split_stanzas_on=None):
+    """Generates a list of dictionaries for each line
+
+    :param text: Full text to be analyzed
+    :param rhyme_analysis: Specify if rhyme analysis is to be performed
+    :param rhythm_format: output format for rhythm analysis
+    :param rhythmical_lengths: List with explicit rhythmical lengths per line
+        that the analysed lines has to meet
+    :param split_stanzas_on: String or regular expression to split text in
+        stanzas. Defaults to None for not splitting.
     :return: list of dictionaries per line
     :rtype: list
     """
