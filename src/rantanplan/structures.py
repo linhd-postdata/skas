@@ -59,10 +59,10 @@ def is_seguidilla(lengths):
     number_of_verses = len(lengths)
     if number_of_verses == 4:
         for i in (0, 2):
-            if 9 > lengths[i] > 5:
+            if 9 > lengths[i] > 6:
                 correct_lines += 1
         for i in (1, 3):
-            if 7 > lengths[i] > 3:
+            if 7 > lengths[i] > 4:
                 correct_lines += 1
     return correct_lines == number_of_verses
 
@@ -102,42 +102,6 @@ def is_seguidilla_gitana(lengths):
                 correct_lines += 1
         if 13 > lengths[2] > 9:
             correct_lines += 1
-    return correct_lines == number_of_verses
-
-
-def is_cuarteto_lira_a(lengths):
-    """
-    [11, 7, 11, 7]
-    :param lengths:
-    :return:
-    """
-    correct_lines = 0
-    number_of_verses = len(lengths)
-    if number_of_verses == 4:
-        for i in (0, 2):
-            if 13 > lengths[i] > 8:
-                correct_lines += 1
-        for i in (1, 3):
-            if 8 > lengths[i] > 5:
-                correct_lines += 1
-    return correct_lines == number_of_verses
-
-
-def is_cuarteto_lira_b(lengths):
-    """
-    [7, 11, 7, 11]
-    :param lengths:
-    :return:
-    """
-    correct_lines = 0
-    number_of_verses = len(lengths)
-    if number_of_verses == 4:
-        for i in (0, 2):
-            if 8 > lengths[i] > 5:
-                correct_lines += 1
-        for i in (1, 3):
-            if 13 > lengths[i] > 8:
-                correct_lines += 1
     return correct_lines == number_of_verses
 
 
@@ -241,64 +205,10 @@ def is_estrofa_manriquena(lengths):
     number_of_verses = len(lengths)
     if number_of_verses == 6:
         for i in (0, 1, 3, 4):
-            if 10 > lengths[i] > 6:
+            if 9 > lengths[i] > 6:
                 correct_lines += 1
         for i in (2, 5):
             if 6 > lengths[i] > 2:
-                correct_lines += 1
-    return correct_lines == number_of_verses
-
-
-def is_sexteto_lira_a(lengths):
-    """
-    [7, 11, 7, 11, 7, 11]
-    :param lengths:
-    :return:
-    """
-    correct_lines = 0
-    number_of_verses = len(lengths)
-    if number_of_verses == 6:
-        for i in (0, 2, 4):
-            if 10 > lengths[i] > 6:
-                correct_lines += 1
-        for i in (1, 3, 5):
-            if 13 > lengths[i] > 9:
-                correct_lines += 1
-    return correct_lines == number_of_verses
-
-
-def is_sexteto_lira_b(lengths):
-    """
-    [11, 7, 11, 11, 7, 11]
-    :param lengths:
-    :return:
-    """
-    correct_lines = 0
-    number_of_verses = len(lengths)
-    if number_of_verses == 6:
-        for i in (0, 2, 3, 5):
-            if 13 > lengths[i] > 9:
-                correct_lines += 1
-        for i in (1, 4):
-            if 8 > lengths[i] > 5:
-                correct_lines += 1
-    return correct_lines == number_of_verses
-
-
-def is_septeto_lira(lengths):
-    """
-    [7, 11, 7, 11, 7, 7, 11]
-    :param lengths:
-    :return:
-    """
-    correct_lines = 0
-    number_of_verses = len(lengths)
-    if number_of_verses == 7:
-        for i in (0, 2, 4, 5):
-            if 8 > lengths[i] > 5:
-                correct_lines += 1
-        for i in (1, 3, 6):
-            if 13 > lengths[i] > 9:
                 correct_lines += 1
     return correct_lines == number_of_verses
 
@@ -435,8 +345,13 @@ STRUCTURES = (
         lambda lengths: all(11 > length > 1 for length in lengths)
     ), (
         CONSONANT_RHYME,
+        "terceto_monorrimo",
+        r"aaa",
+        lambda lengths: all(16 > length > 8 for length in lengths)
+    ), (
+        CONSONANT_RHYME,
         "terceto",
-        r"(aba)|(-aa)",
+        r"(a-a)|(-aa)|(aa-)",
         lambda lengths: all(16 > length > 8 for length in lengths)
     ), (
         CONSONANT_RHYME,
@@ -445,19 +360,14 @@ STRUCTURES = (
         lambda lengths: all(16 > length > 9 for length in lengths)
     ), (
         CONSONANT_RHYME,
-        "sexteto_rima",
+        "sexta_rima",
         r"(ababcc)|(aacbbc)",
-        lambda lengths: statistics.median(lengths) == 11
+        lambda lengths: statistics.median(lengths) == 11 or 12 > statistics.mean(lengths) > 10
     ), (
         CONSONANT_RHYME,
         "sextilla",
         r"(aabaab)|(abcabc)|(ababab)|(abbccb)|(aababa)",
         lambda lengths: all(11 > length > 4 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
-        "terceto_monorrimo",
-        r"aaa",
-        lambda lengths: all(16 > length > 8 for length in lengths)
     ), (
         CONSONANT_RHYME,
         "redondilla",
@@ -470,24 +380,9 @@ STRUCTURES = (
         lambda lengths: all(10 > length > 4 for length in lengths)
     ), (
         CONSONANT_RHYME,
-        "aleluya",
-        r"((.)\2){3,}",
-        lambda lengths: all(11 > length > 4 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
         "cuarteto",
         r"abba",
         lambda lengths: all(16 > length > 8 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
-        "serventesio",
-        r"abab",
-        lambda lengths: all(16 > length > 8 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
-        "cuaderna_vía",
-        r"aaaa",
-        lambda lengths: statistics.median(lengths) == 14
     ), (
         CONSONANT_RHYME,
         "cuarteta",
@@ -495,14 +390,39 @@ STRUCTURES = (
         lambda lengths: all(10 > length > 4 for length in lengths)
     ), (
         CONSONANT_RHYME,
+        "serventesio",
+        r"abab",
+        lambda lengths: all(16 > length > 6 for length in lengths)
+    ), (
+        CONSONANT_RHYME,
+        "cuaderna_vía",
+        r"aaaa",
+        lambda lengths: statistics.median(lengths) == 14 or 15 > statistics.mean(lengths) >= 13
+    ), (
+        CONSONANT_RHYME,
         "octava_real",
         r"(abababcc)",
-        lambda lengths: statistics.median(lengths) == 11
+        lambda lengths: statistics.median(lengths) == 11 or 12 > statistics.mean(lengths) > 10
     ), (
         CONSONANT_RHYME,
         "copla_arte_mayor",
         r"(abbaacca)|(ababbccb)|(abbaacac)",
         lambda lengths: all(16 > length > 8 for length in lengths)
+    ), (
+        CONSONANT_RHYME,
+        "copla_mixta",
+        r"abbacca",
+        lambda lengths: all(11 > length > 3 for length in lengths)
+    ), (
+        CONSONANT_RHYME,
+        "octavilla",
+        r"(abbecdde)|(ababbccb)|(-aab-ccb)|(abbcaddc)",
+        lambda lengths: all(11 > length > 4 for length in lengths)
+    ), (
+        ASSONANT_RHYME,
+        "octavilla",
+        r"(abbecdde)|(ababbccb)|(-aab-ccb)",
+        lambda lengths: all(11 > length > 4 for length in lengths)
     ), (
         CONSONANT_RHYME,
         "copla_arte_menor",
@@ -513,32 +433,22 @@ STRUCTURES = (
         CONSONANT_RHYME,
         "copla_castellana",
         r"(abbacddc)|(ababcdcd)|(abbacdcd)|(ababcddc)|(abbaacca)",
-        lambda lengths: statistics.median(lengths) == 8
-    ),  (
-        CONSONANT_RHYME,
-        "copla_mixta",
-        r"abbacca",
-        lambda lengths: all(11 > length > 3 for length in lengths)
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         CONSONANT_RHYME,
         "octava",
         r".{8}",
-        lambda lengths: all(16 > length > 8 for length in lengths)
-    ), (
-        CONSONANT_RHYME,
-        "octavilla",
-        r"(abbecdde)|(ababbccb)",
-        lambda lengths: all(11 > length > 4 for length in lengths)
+        lambda lengths: all(23 > length > 3 for length in lengths)
     ), (
         ASSONANT_RHYME,
-        "octavilla",
-        r"(abbecdde)|(ababbccb)",
-        lambda lengths: all(11 > length > 4 for length in lengths)
+        "octava",
+        r".{8}",
+        lambda lengths: all(23 > length > 3 for length in lengths)
     ), (
         CONSONANT_RHYME,
         "espinela",
         r"abbaaccddc",
-        lambda lengths: statistics.median(lengths) == 8
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         CONSONANT_RHYME,
         "copla_real",
@@ -546,7 +456,7 @@ STRUCTURES = (
         ((ababa)|(abaab)|(abbab)|(aabab)|(aabba)
         (cdcdc)|(cdccd)|(cddcd)|(ccdcd)|(ccddc))""",
         # tiene versos quebrados, cambiar regla de lengths
-        lambda lengths: statistics.median(lengths) == 8
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         CONSONANT_RHYME,
         "lira",
@@ -581,13 +491,13 @@ STRUCTURES = (
         ASSONANT_RHYME,
         "romance",
         r"((.b)+)|(([^a]a)+)",
-        lambda lengths: statistics.median(lengths) == 8
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         ASSONANT_RHYME,
         "romance_arte_mayor",
         r"((.b)+)|((.a)+)",
         lambda lengths: 11 <= statistics.median(lengths) <= 14
-    ), (
+     ), (
         ASSONANT_RHYME,
         "haiku",
         r".*",
@@ -598,12 +508,12 @@ STRUCTURES = (
         ASSONANT_RHYME,
         "soleá",
         r"(a-a)",
-        lambda lengths: statistics.median(lengths) == 8
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         CONSONANT_RHYME,
         "decima_antigua",
         r"(abbaacccaa)",
-        lambda lengths: statistics.median(lengths) == 8
+        lambda lengths: statistics.median(lengths) == 8 or 9 > statistics.mean(lengths) > 7
     ), (
         CONSONANT_RHYME,
         "septeto",

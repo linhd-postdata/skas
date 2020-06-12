@@ -189,18 +189,6 @@ def test_ovillejo():
     assert input_poem[0]["structure"] == output
 
 
-def test_aleluya():
-    poem = """¡Soria fría, Soria pura,
-    cabeza de Extremadura,
-    con su castillo guerrero
-    arruinado, sobre el Duero;
-    con sus murallas roídas
-    y sus casas denegridas!"""
-    output = "aleluya"
-    input_poem = get_scansion(poem, rhyme_analysis=True)
-    assert input_poem[0]["structure"] == output
-
-
 def test_quinteto():
     poem = """Juegan y beben: mas en bien, sin vicio,
     sin interés y sin exceso: tienen
