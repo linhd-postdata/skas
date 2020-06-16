@@ -231,6 +231,33 @@ def is_ovillejo(lengths):
     return correct_lines == number_of_verses
 
 
+def get_rhyme_pattern_counts(string):
+    """
+    Count how many times does a character occur in a given string before its
+    own position.
+    :param string: String with the rhyme pattern
+    :return: A string with the count values
+    """
+    count_dict = {}
+    output = []
+    for character in string:
+        count = count_dict.get(character, 0)
+        output.append(count)
+        count_dict[character] = count + 1
+    return output
+
+
+def is_terceto_encadenado(rhyme_pattern):
+    """
+    Checks if a poem has a structure that matches that of a "terceto encadenado"
+    :param rhyme_pattern: String with the rhyme pattern
+    :return: `True` if it macthes, `False` otherwise
+    """
+    string_pattern = [str(c) for c in get_rhyme_pattern_counts(rhyme_pattern)]
+    rhyme_pattern_count = "".join(string_pattern)
+    return bool(re.match(r"001(102)*(101(1)?|1-2)", rhyme_pattern_count))
+
+
 ASSONANT_RHYME = "assonant"
 CONSONANT_RHYME = "consonant"
 
@@ -328,6 +355,11 @@ STRUCTURES = (
         "ovillejo",
         r"aabbcccddc",
         is_ovillejo
+    ), (
+        CONSONANT_RHYME,
+        "terceto_encadenado",
+        is_terceto_encadenado,
+        lambda lengths: all(14 > length > 9 for length in lengths)
     ), (
         CONSONANT_RHYME,
         "sonnet",

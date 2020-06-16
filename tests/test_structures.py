@@ -1,4 +1,5 @@
 from rantanplan.core import get_scansion
+from rantanplan.structures import get_rhyme_pattern_counts
 
 
 def test_seguidilla():
@@ -320,3 +321,31 @@ def test_decima_antigua():
     output = "decima_antigua"
     input_poem = get_scansion(poem, rhyme_analysis=True)
     assert input_poem[0]["structure"] == output
+
+
+def test_terceto_encadenado():
+    poem = """Gemidos oigo y lamentar doliente,
+    y el ronco son de parches destemplados
+    y el crujir de las armas juntamente.
+    Marchan en pos del féretro soldados
+    con tardo paso y armas funerales
+    al eco de los bronces disparados.
+    Y entre fúnebres pompas y marciales,
+    en la morada de la muerte augusta,
+    las bóvedas retumban sepulcrales.
+    ¡Ay! Para siempre ya la losa adusta,
+    ¡oh caro Albino! le escondió a tus ojos,
+    mas no el bueno murió: la parca injusta
+    roba tan solo efímeros despojos,
+    y alba y triunfante la alcanzada gloria
+    guarda en eternos mármoles la historia.
+    """
+    output = "terceto_encadenado"
+    input_poem = get_scansion(poem, rhyme_analysis=True)
+    assert input_poem[0]["structure"] == output
+
+
+def test_count_characters():
+    pattern = "ababcbcdcdedeff"
+    output = [0, 0, 1, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 1]
+    assert get_rhyme_pattern_counts(pattern) == output

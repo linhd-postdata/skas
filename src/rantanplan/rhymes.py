@@ -222,14 +222,20 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
 
 def search_structure(rhyme, rhythmical_lengths, structure_key, structures=None):
     """Search in stanza structures for a structure that matches assonance or
-    consonance, a rhyme pattern, and a condition on the lengths of sylalbles
-    of lines. For the first matching structure, its index in STRUCTURES will
-    be returned. An alternative STRUCTURES list can ba passed in structures."""
+    consonance, a rhyme pattern (regex or callable), and a condition on the
+    lengths of syllables of lines. For the first matching structure, its index
+    in STRUCTURES will be returned. An alternative STRUCTURES list can ba passed
+    in structures."""
     if structures is None:
         structures = STRUCTURES
     for index, (key, _, structure, func) in enumerate(structures):
+        if callable(structure):
+            structure_check = structure(rhyme)
+        else:  # it's a regex
+            structure_re = re.compile(structure, re.VERBOSE)
+            structure_check = structure_re.fullmatch(rhyme)
         if (key == structure_key
-                and re.compile(structure, re.VERBOSE).fullmatch(rhyme)
+                and structure_check
                 and func(rhythmical_lengths)):
             return index
 
