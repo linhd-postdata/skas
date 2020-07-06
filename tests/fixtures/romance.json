@@ -123,7 +123,11 @@
     "rhythm": {
       "stress": "--++--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "-",
@@ -226,7 +230,11 @@
     "rhythm": {
       "stress": "-+---+-",
       "type": "pattern",
-      "length": 7
+      "length": 7,
+      "length_range": {
+        "min_length": 7,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -335,7 +343,11 @@
     "rhythm": {
       "stress": "---+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "b",
@@ -460,7 +472,11 @@
     "rhythm": {
       "stress": "-+-+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -569,7 +585,11 @@
     "rhythm": {
       "stress": "--+---+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "b",
@@ -680,7 +700,11 @@
     "rhythm": {
       "stress": "--+---+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -782,14 +806,18 @@
     "rhythm": {
       "stress": "------+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
-    "rhyme": "c",
-    "ending": "ao",
-    "ending_stress": -2,
-    "rhyme_type": "assonant",
-    "rhyme_relaxation": true
+    "rhyme": "-",
+    "ending": "",
+    "ending_stress": 0,
+    "rhyme_type": "",
+    "rhyme_relaxation": null
   },
   {
     "tokens": [
@@ -893,7 +921,11 @@
     "rhythm": {
       "stress": "+--+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -1011,7 +1043,11 @@
     "rhythm": {
       "stress": "--++--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "c",
@@ -1078,7 +1114,7 @@
             "is_stressed": false
           },
           {
-            "syllable": "són",
+            "syllable": "sión",
             "is_stressed": true,
             "is_word_end": true
           }
@@ -1121,7 +1157,7 @@
         "is_stressed": false
       },
       {
-        "syllable": "són",
+        "syllable": "sión",
         "is_stressed": true,
         "is_word_end": true
       }
@@ -1129,7 +1165,11 @@
     "rhythm": {
       "stress": "-+-+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -1266,14 +1306,18 @@
     "rhythm": {
       "stress": "--+-+-+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 10
+      }
     },
     "structure": "romance",
-    "rhyme": "-",
-    "ending": "",
-    "ending_stress": 0,
-    "rhyme_type": "",
-    "rhyme_relaxation": null
+    "rhyme": "d",
+    "ending": "ia",
+    "ending_stress": -2,
+    "rhyme_type": "assonant",
+    "rhyme_relaxation": true
   },
   {
     "tokens": [
@@ -1377,7 +1421,11 @@
     "rhythm": {
       "stress": "----+-+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -1493,14 +1541,18 @@
     "rhythm": {
       "stress": "---+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
-    "rhyme": "-",
-    "ending": "",
-    "ending_stress": 0,
-    "rhyme_type": "",
-    "rhyme_relaxation": null
+    "rhyme": "d",
+    "ending": "ia",
+    "ending_stress": -2,
+    "rhyme_type": "assonant",
+    "rhyme_relaxation": true
   },
   {
     "tokens": [
@@ -1611,7 +1663,11 @@
     "rhythm": {
       "stress": "---+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "a",
@@ -1723,7 +1779,11 @@
     "rhythm": {
       "stress": "-+-+--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 9
+      }
     },
     "structure": "romance",
     "rhyme": "-",
@@ -1738,21 +1798,15 @@
         "word": [
           {
             "syllable": "dé",
-            "is_stressed": true,
-            "is_word_end": true
-          }
-        ],
-        "stress_position": -1
-      },
-      {
-        "word": [
+            "is_stressed": true
+          },
           {
             "syllable": "le",
             "is_stressed": false,
             "is_word_end": true
           }
         ],
-        "stress_position": 0
+        "stress_position": -2
       },
       {
         "word": [
@@ -1799,8 +1853,7 @@
     "phonological_groups": [
       {
         "syllable": "dé",
-        "is_stressed": true,
-        "is_word_end": true
+        "is_stressed": true
       },
       {
         "syllable": "le",
@@ -1834,7 +1887,11 @@
     "rhythm": {
       "stress": "+-++--+-",
       "type": "pattern",
-      "length": 8
+      "length": 8,
+      "length_range": {
+        "min_length": 8,
+        "max_length": 8
+      }
     },
     "structure": "romance",
     "rhyme": "a",

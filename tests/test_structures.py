@@ -1,5 +1,10 @@
 from rantanplan.core import get_scansion
 from rantanplan.structures import get_rhyme_pattern_counts
+from rantanplan.structures import has_fixed_length_verses
+from rantanplan.structures import has_maximum_length
+from rantanplan.structures import has_minimum_length
+from rantanplan.structures import has_mixed_length_verses
+from rantanplan.structures import has_same_length_verses
 
 
 def test_seguidilla():
@@ -318,7 +323,7 @@ def test_decima_antigua():
     a vos, luz de trobadores,
     fablo en modo linpio sano,
     como hermano con hermano."""
-    output = "decima_antigua"
+    output = "décima_antigua"
     input_poem = get_scansion(poem, rhyme_analysis=True)
     assert input_poem[0]["structure"] == output
 
@@ -349,3 +354,79 @@ def test_count_characters():
     pattern = "ababcbcdcdedeff"
     output = [0, 0, 1, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 1]
     assert get_rhyme_pattern_counts(pattern) == output
+
+
+def test_has_mixed_length_verses_all():
+    ranges_list = [range(11, 13), range(7, 12), range(11, 12)]
+    length_a = 11
+    length_b = 7
+    assert has_mixed_length_verses(length_a, length_b, ranges_list)
+
+
+def test_has_mixed_length_verses_only_one():
+    ranges_list = [range(11, 13), range(8, 12), range(11, 12)]
+    length_a = 11
+    length_b = 7
+    assert not has_mixed_length_verses(length_a, length_b, ranges_list)
+
+
+def test_has_mixed_length_verses_none():
+    ranges_list = [range(11, 13), range(7, 12), range(11, 12)]
+    length_a = 6
+    length_b = 4
+    assert not has_mixed_length_verses(length_a, length_b, ranges_list)
+
+
+def test_has_same_length_verses_true():
+    fixed_length = 8
+    ranges_list = [range(7, 13), range(8, 12), range(1, 12)]
+    assert has_same_length_verses(fixed_length, ranges_list)
+
+
+def test_has_same_length_verses_false():
+    fixed_length = 14
+    ranges_list = [range(7, 13), range(8, 12), range(1, 12)]
+    assert not has_same_length_verses(fixed_length, ranges_list)
+
+
+def test_has_fixed_length_verses():
+    lengths_list = "haiku"  # [5, 7, 5]
+    ranges_list = [range(5, 13), range(7, 12), range(5, 12)]
+    assert has_fixed_length_verses(lengths_list, ranges_list)
+
+
+def test_has_fixed_length_verses_false():
+    lengths_list = "haiku"  # [5, 7, 5]
+    ranges_list = [range(8, 13), range(8, 12), range(1, 12)]
+    assert not has_fixed_length_verses(lengths_list, ranges_list)
+
+
+def test_has_fixed_length_verses_fluctuation():
+    lengths_list = "haiku"  # [5, 7, 5]
+    ranges_list = [range(6, 13), range(8, 12), range(6, 12)]
+    assert has_fixed_length_verses(
+        lengths_list, ranges_list, fluctuation_size=1)
+
+
+def test_has_minimum_length():
+    min_length = 14
+    ranges_list = [range(8, 15), range(8, 15), range(1, 16)]
+    assert has_minimum_length(min_length, ranges_list)
+
+
+def test_has_minimum_length_false():
+    min_length = 14
+    ranges_list = [range(9, 13), range(8, 12), range(1, 12)]
+    assert not has_minimum_length(min_length, ranges_list)
+
+
+def test_has_maximum_length():
+    max_length = 8
+    ranges_list = [range(8, 15), range(8, 16), range(1, 18)]
+    assert has_maximum_length(max_length, ranges_list)
+
+
+def test_has_maximum_length_false():
+    max_length = 8
+    ranges_list = [range(9, 13), range(8, 16), range(1, 18)]
+    assert not has_maximum_length(max_length, ranges_list)

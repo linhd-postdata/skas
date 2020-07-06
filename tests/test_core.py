@@ -25,6 +25,7 @@ from rantanplan.core import get_words
 from rantanplan.core import has_single_liaisons
 from rantanplan.core import have_prosodic_liaison
 from rantanplan.core import is_paroxytone
+from rantanplan.core import remove_exact_length_matches
 from rantanplan.core import spacy_tag_to_dict
 from rantanplan.core import syllabify
 
@@ -38,9 +39,9 @@ def phonological_groups():
 
 
 @pytest.fixture
-def rhyme_analysis_sonnet():
+def sonnet():
     return json.loads(
-        Path("tests/fixtures/rhyme_analysis_sonnet.json").read_text())
+        Path("tests/fixtures/sonnet.json").read_text())
 
 
 @pytest.fixture
@@ -425,7 +426,7 @@ def test_get_scansion_spacy_doc_text():
     assert _get_scansion(text) == output
 
 
-def test_get_scansion_rhyme_analysis_sonnet(rhyme_analysis_sonnet):
+def test_get_scansion_rhyme_analysis_sonnet(sonnet):
     text = """Cruel amor, ¿tan fieras sinrazones
     tras tanta confusión, tras pena tanta?
     ¿De qué sirve la argolla a la garganta
@@ -440,8 +441,8 @@ def test_get_scansion_rhyme_analysis_sonnet(rhyme_analysis_sonnet):
     Mas pienso que has querido persuadirme
     que trayendo los hierros a los ojos
     no pueda de la causa arrepentirme."""
-    assert get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
-    assert _get_scansion(text, rhyme_analysis=True) == rhyme_analysis_sonnet
+    assert get_scansion(text, rhyme_analysis=True) == sonnet
+    assert _get_scansion(text, rhyme_analysis=True) == sonnet
 
 
 def test_get_scansion_stanzas():
@@ -513,8 +514,10 @@ def test_get_scansion(scansion_sonnet):
     me recordó a Fray Luis:
     «Ya el tiempo nos convida
     A los estudios nobles...»!"""
-    assert get_scansion(text, rhythm_format="pattern") == scansion_sonnet
-    assert _get_scansion(text, rhythm_format="pattern") == scansion_sonnet
+    assert get_scansion(
+        text, rhythm_format="pattern", rhyme_analysis=True) == scansion_sonnet
+    assert _get_scansion(
+        text, rhythm_format="pattern", rhyme_analysis=True) == scansion_sonnet
 
 
 def test_get_scansion_stressed_last_syllable():
@@ -1024,8 +1027,8 @@ def test_clean_phonological_groups():
         {'syllable': 'rit', 'is_stressed': True},
         {'syllable': 'mo', 'is_stressed': False, 'is_word_end': True}
     ]
-    assert clean_phonological_groups(phonological_groups,
-                                     liaison_positions, liaison_property) == output
+    assert clean_phonological_groups(
+        phonological_groups, liaison_positions, liaison_property) == output
 
 
 def test_get_stresses():
@@ -1168,3 +1171,93 @@ def test_has_single_liaisons_true():
     liaisons = [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
     output = has_single_liaisons(liaisons)
     assert output
+
+
+def test_remove_exact_length_matches():
+    lines = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'me',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}],
+                'stress_position': 0},
+            {'word': [
+                {'syllable': 'he', 'is_stressed': True, 'is_word_end': True}],
+                'stress_position': -1}],
+            'phonological_groups': [
+                {'syllable': 'mehe',
+                 'is_stressed': True,
+                 'synalepha_index': [1],
+                 'is_word_end': True}],
+            'rhythm': {'stress': '+-',
+                       'type': 'pattern',
+                       'length': 2,
+                       'length_range': {'min_length': 2, 'max_length': 3}}},
+        {'tokens': [{'word': [
+            {'syllable': 'i', 'is_stressed': True},
+            {'syllable': 'do', 'is_stressed': False, 'is_word_end': True}],
+            'stress_position': -2}],
+            'phonological_groups': [
+                {'syllable': 'i', 'is_stressed': True},
+                {'syllable': 'do', 'is_stressed': False, 'is_word_end': True}],
+            'rhythm': {'stress': '+-',
+                       'type': 'pattern',
+                       'length': 2,
+                       'length_range': {'min_length': 2, 'max_length': 2}}}]
+    output = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'me',
+                 'is_stressed': False,
+                 'has_synalepha': True,
+                 'is_word_end': True}],
+                'stress_position': 0},
+            {'word': [
+                {'syllable': 'he', 'is_stressed': True, 'is_word_end': True}],
+                'stress_position': -1}],
+            'phonological_groups': [
+                {'syllable': 'mehe',
+                 'is_stressed': True,
+                 'synalepha_index': [1],
+                 'is_word_end': True}],
+            'rhythm': {'stress': '+-',
+                       'type': 'pattern',
+                       'length': 2,
+                       'length_range': {'min_length': 2, 'max_length': 3}}},
+        {'tokens': [
+            {'word': [
+                {'syllable': 'i', 'is_stressed': True},
+                {'syllable': 'do', 'is_stressed': False, 'is_word_end': True}],
+                'stress_position': -2}],
+            'phonological_groups': [
+                {'syllable': 'i', 'is_stressed': True},
+                {'syllable': 'do', 'is_stressed': False, 'is_word_end': True}],
+            'rhythm': {'stress': '+-', 'type': 'pattern', 'length': 2}}]
+    assert remove_exact_length_matches(lines) == output
+
+
+def test_get_scansion_stress_last_word():
+    text = "¡oh!"
+    output = [
+        {'tokens': [
+            {'symbol': '¡'},
+            {'word': [
+                {'syllable': 'oh', 'is_stressed': True, 'is_word_end': True}],
+                'stress_position': -1},
+            {'symbol': '!'}],
+            'phonological_groups': [{'syllable': 'oh',
+                                     'is_stressed': True,
+                                     'is_word_end': True}],
+            'rhythm': {'stress': '+-', 'type': 'pattern', 'length': 2}}]
+    assert get_scansion(text) == output
+
+
+def test_get_word_stress_last_word_false():
+    text = nlp("¡oh!")
+    output = [
+        {'symbol': '¡'},
+        {'word': [
+            {'syllable': 'oh', 'is_stressed': False}], 'stress_position': 0},
+        {'symbol': '!'}]
+    assert get_words(text) == output

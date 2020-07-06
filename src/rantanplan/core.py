@@ -163,26 +163,45 @@ def clean_phonological_groups(groups, liaison_positions, liaison_property):
     return clean_groups
 
 
-def get_rhythmical_pattern(phonological_groups, rhythm_format="pattern"):
+def get_length_ranges(phonological_groups, length):
+    count_liaisons = 0
+    for syllable in phonological_groups:
+        count_liaisons += len(syllable.get("synalepha_index", []))
+        count_liaisons += len(syllable.get("sinaeresis_index", []))
+    length_ranges_dict = {
+        "min_length": length, "max_length": length + count_liaisons}
+    return length_ranges_dict
+
+
+def get_rhythmical_pattern(phonological_groups, rhythm_format="pattern",
+                           rhyme_analysis=False):
     """Gets a rhythm pattern for a poem in either "pattern": "-++-+-+-"
     "binary": "01101010" or "indexed": [1,2,4,6] format
 
     :param phonological_groups: a dictionary with the syllables of the line
     :param rhythm_format: The output format for the rhythm
-    :return: Dictionary with with rhythm and phonologic groups
+    :param rhyme_analysis: Whether or not rhyme analysis is to be performed
+    :return: Dictionary with with rhythm and phonological groups
     :rtype: dict
     """
     stresses = get_stresses(phonological_groups)
     stress = format_stress(stresses, rhythm_format)
-    return {
+    stresses_length = len(stresses)
+    rhythmical_pattern = {
         "stress": stress,
         "type": rhythm_format,
-        "length": len(stresses)
+        "length": stresses_length,
     }
+    if rhyme_analysis:
+        length_range = get_length_ranges(phonological_groups, stresses_length)
+        rhythmical_pattern.update({
+            "length_range": length_range
+        })
+    return rhythmical_pattern
 
 
 def get_stresses(phonological_groups):
-    """Gets a list of stress marks (`True` for stressed, `False` for unstressed)
+    """Gets a list of stress marks, `True` for stressed, `False` for unstressed
     from a list of phonological groups applying rules depending on the ending
     stress.
 
@@ -393,11 +412,13 @@ def spacy_tag_to_dict(tag):
         return {}
 
 
-def get_word_stress(word, pos, tag, alternative_syllabification=False):
+def get_word_stress(word, pos, tag, alternative_syllabification=False,
+                    is_last_word=False):
     """Gets a list of syllables from a word and creates a list with syllabified
     word and stressed syllable index
 
     :param word: Word string
+    :param is_last_word: Wether or not the word is the last one of a verse
     :param alternative_syllabification: Wether or not the alternative
         syllabification is used
     :param pos: PoS tag from spacy ("DET")
@@ -421,49 +442,13 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
                 stress_mente['word']),
             "secondary_stress_positions": [stress_mente['stress_position']],
         }
-    if len(syllable_list) == 1:
-        first_monosyllable = syllable_list[0].lower()
-        if ((first_monosyllable not in UNSTRESSED_UNACCENTED_MONOSYLLABLES)
-                and (first_monosyllable in STRESSED_UNACCENTED_MONOSYLLABLES
-                     or pos not in ("SCONJ", "CCONJ", "DET", "PRON", "ADP")
-                     or (pos == "PRON" and tag.get("Case") == "Nom")
-                     or (pos == "DET" and tag.get("Definite") in (
-                                "Dem", "Ind"))
-                     or pos in ("PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
-                     or (pos == "ADJ" and tag.get("Poss", None) != "Yes")
-                     or (pos == "PRON"
-                         and tag.get("PronType", None) in ("Prs", "Ind"))
-                     or (pos == "DET" and tag.get("PronType", None) == "Ind")
-                     or (pos in ("ADJ", "DET"
-                                        and tag.get("Poss", None) == "Yes"))
-                     or (pos in ("PRON", "DET")
-                         and tag.get("PronType", None) in (
-                                 "Exc", "Int", "Dem"))
-                     or "".join(word).lower() in STRESSED_PRON) and (
-                        word_lower not in UNSTRESSED_FORMS)):
+    # Bypass POS exceptions for the last word of a verse as it should always be
+    # stressed
+    if is_last_word:
+        if len(syllable_list) == 1:
             stressed_position = -1
         else:
-            stressed_position = 0  # unstressed monosyllable
-    else:
-        tilde = get_orthographic_accent(syllable_list)
-        if tilde is not None:
-            stressed_position = tilde - len(syllable_list)
-        elif (pos in ("INTJ", "PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
-              or pos == "ADJ"
-              or (pos == "PRON" and tag.get("PronType", None) in (
-                        "Prs", "Ind"))
-              or (pos == "DET" and tag.get("PronType", None) in (
-                        "Dem", "Ind"))
-              or (pos == "DET" and tag.get("Definite", None) == "Ind")
-              or (pos == "PRON" and tag.get("Poss", None) == "Yes")
-              or (pos in ("PRON", "DET")
-                  and tag.get("PronType", None) in ("Exc", "Int", "Dem"))
-              or (word_lower in STRESSED_PRON)) and (
-                word_lower not in UNSTRESSED_FORMS) and (
-                word_lower not in POSSESSIVE_PRON_UNSTRESSED):
             tilde = get_orthographic_accent(syllable_list)
-            # If an orthographic accent exists,
-            # the syllable negative index is saved
             if tilde is not None:
                 stressed_position = -(len(syllable_list) - tilde)
             # Elif the word is paroxytone (llana)
@@ -474,8 +459,70 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
             # that it's an oxytone word (aguda).
             else:
                 stressed_position = -1
+    else:
+        if len(syllable_list) == 1:
+            first_monosyllable = syllable_list[0].lower()
+            if ((first_monosyllable not in UNSTRESSED_UNACCENTED_MONOSYLLABLES)
+                    and (
+                        first_monosyllable in STRESSED_UNACCENTED_MONOSYLLABLES
+                        or pos not in (
+                                "SCONJ", "CCONJ", "DET", "PRON", "ADP")
+                        or (pos == "PRON" and tag.get("Case") == "Nom")
+                        or (pos == "DET" and tag.get("Definite") in (
+                            "Dem", "Ind"))
+                        or pos in (
+                                "PROPN", "NUM", "NOUN", "VERB", "AUX",
+                                "ADV")
+                        or (pos == "ADJ" and tag.get("Poss",
+                                                     None) != "Yes")
+                        or (pos == "PRON"
+                            and tag.get("PronType", None) in (
+                                    "Prs", "Ind"))
+                        or (pos == "DET" and tag.get("PronType",
+                                                     None) == "Ind")
+                        or (pos in ("ADJ", "DET"
+                                           and tag.get("Poss",
+                                                       None) == "Yes"))
+                        or (pos in ("PRON", "DET")
+                            and tag.get("PronType", None) in (
+                                    "Exc", "Int", "Dem"))
+                        or "".join(word).lower() in STRESSED_PRON) and (
+                            word_lower not in UNSTRESSED_FORMS)):
+                stressed_position = -1
+            else:
+                stressed_position = 0  # unstressed monosyllable
         else:
-            stressed_position = 0  # unstressed
+            tilde = get_orthographic_accent(syllable_list)
+            if tilde is not None:
+                stressed_position = tilde - len(syllable_list)
+            elif (pos in ("INTJ", "PROPN", "NUM", "NOUN", "VERB", "AUX", "ADV")
+                  or pos == "ADJ"
+                  or (pos == "PRON" and tag.get("PronType", None) in (
+                            "Prs", "Ind"))
+                  or (pos == "DET" and tag.get("PronType", None) in (
+                            "Dem", "Ind"))
+                  or (pos == "DET" and tag.get("Definite", None) == "Ind")
+                  or (pos == "PRON" and tag.get("Poss", None) == "Yes")
+                  or (pos in ("PRON", "DET")
+                      and tag.get("PronType", None) in ("Exc", "Int", "Dem"))
+                  or (word_lower in STRESSED_PRON)) and (
+                    word_lower not in UNSTRESSED_FORMS) and (
+                    word_lower not in POSSESSIVE_PRON_UNSTRESSED):
+                tilde = get_orthographic_accent(syllable_list)
+                # If an orthographic accent exists,
+                # the syllable negative index is saved
+                if tilde is not None:
+                    stressed_position = -(len(syllable_list) - tilde)
+                # Elif the word is paroxytone (llana)
+                # we save the penultimate syllable.
+                elif is_paroxytone(syllable_list):
+                    stressed_position = -2
+                # If the word does not meet the above criteria that means
+                # that it's an oxytone word (aguda).
+                else:
+                    stressed_position = -1
+            else:
+                stressed_position = 0  # unstressed
     out_syllable_list = []
     for index, syllable in enumerate(syllable_list):
         out_syllable_list.append(
@@ -494,7 +541,10 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False):
                 or (first_syllable[-1] in WEAK_VOWELS
                     and second_syllable[0] in STRONG_VOWELS)
                 or (first_syllable[-1] in STRONG_VOWELS
-                    and second_syllable[0] in WEAK_VOWELS)):
+                    and second_syllable[0] in WEAK_VOWELS)
+                or (first_syllable[-1] in STRONG_VOWELS
+                    and second_syllable[0] == "h"
+                    and second_syllable[1] in STRONG_VOWELS)):
             out_syllable_list[index - 1].update({'has_sinaeresis': True})
     return {
         'word': out_syllable_list, "stress_position": stressed_position,
@@ -516,7 +566,7 @@ def get_last_syllable(token_list):
 
 def get_words(word_list, alternative_syllabification=False):
     """Gets a list of syllables from a word and creates a list with syllabified
-    word and stressed syllabe index
+    word and stressed syllable index
 
     :param word_list: List of spacy objects representing a word or sentence
     :param alternative_syllabification: Wether or not the alternative
@@ -526,7 +576,7 @@ def get_words(word_list, alternative_syllabification=False):
     :rtype: list
     """
     syllabified_words = []
-    for word in word_list:
+    for index, word in enumerate(word_list):
         if word.is_alpha:
             if '__' in word.tag_:
                 pos, tag = word.tag_.split('__')
@@ -534,8 +584,15 @@ def get_words(word_list, alternative_syllabification=False):
                 pos = word.pos_ or ""
                 tag = word.tag_ or ""
             tags = spacy_tag_to_dict(tag)
-            stressed_word = get_word_stress(word.text, pos, tags,
-                                            alternative_syllabification)
+            # If it's the last word of a verse, mark it so it's always stressed
+            # `is` is used here to be sure it's the same spacy object
+            if word is [w for w in word_list if w.is_alpha][-1]:
+                stressed_word = get_word_stress(word.text, pos, tags,
+                                                alternative_syllabification,
+                                                is_last_word=True)
+            else:
+                stressed_word = get_word_stress(word.text, pos, tags,
+                                                alternative_syllabification)
             if word.pos_ in ("AUX", "VERB") and word._.affixes_length:
                 stressed_word.update(
                     {'affixes_length': word._.affixes_length})
@@ -660,7 +717,9 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         )
         line.update({
             "phonological_groups": phonological_groups,
-            "rhythm": get_rhythmical_pattern(phonological_groups, rhythm_format)
+            "rhythm": get_rhythmical_pattern(phonological_groups,
+                                             rhythm_format,
+                                             rhyme_analysis=rhyme_analysis)
         })
     if rhyme_analysis:
         analyzed_lines = analyze_rhyme(lines)
@@ -681,21 +740,27 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         if rhythmical_lengths is not None:
             structure_length = rhythmical_lengths
         else:
+            # Handle repeating stanzas
             line_structure = line.get("structure", None)
-            structure_length = STRUCTURES_LENGTH.get(line_structure, None)
-        if structure_length is not None:
+            structure_length, repeating_structure = STRUCTURES_LENGTH.get(
+                line_structure, [[], False])
+            if structure_length and repeating_structure:
+                repetitions = int(len(lines) / len(structure_length))
+                structure_length = structure_length * repetitions
+        if structure_length:
             if line["rhythm"]["length"] < structure_length[idx]:
                 candidates = generate_phonological_groups(raw_tokens[idx])
                 for candidate in candidates:
                     rhythm = get_rhythmical_pattern(
-                        candidate, rhythm_format)
+                        candidate, rhythm_format,
+                        rhyme_analysis=rhyme_analysis)
                     if rhythm["length"] == structure_length[idx]:
                         line.update({
                             "phonological_groups": candidate,
                             "rhythm": rhythm,
                         })
                         break
-    return lines
+    return remove_exact_length_matches(lines)
 
 
 def break_on_h(liaison_type, syllable_left, syllable_right):
@@ -783,3 +848,17 @@ def has_single_liaisons(liaisons):
     :rtype: bool
     """
     return not any(i == j == 1 for i, j in zip(liaisons, liaisons[1:]))
+
+
+def remove_exact_length_matches(lines):
+    """Removes key "length_range" on lines with an exact length match
+    :param lines: List of dictionary lines of the poem
+    :return: Returns the lines list without  the "length_range" on lines with
+    an exact length match
+    """
+    for line in lines.copy():
+        if "length_range" in line["rhythm"]:
+            ranges = line["rhythm"]["length_range"]
+            if ranges["min_length"] == ranges["max_length"]:
+                del line["rhythm"]["length_range"]
+    return lines

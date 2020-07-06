@@ -13,7 +13,6 @@ from rantanplan.rhymes import get_stressed_endings
 from rantanplan.rhymes import rhyme_codes_to_letters
 from rantanplan.rhymes import search_structure
 from rantanplan.rhymes import split_stress
-from rantanplan.structures import STRUCTURES
 
 
 @pytest.fixture
@@ -56,6 +55,18 @@ def couplet():
 @pytest.fixture
 def romance():
     return json.loads(Path("tests/fixtures/romance.json").read_text())
+
+
+@pytest.fixture
+def rhyme_analysis_haiku():
+    return json.loads(
+        Path("tests/fixtures/rhyme_analysis_haiku.json").read_text())
+
+
+@pytest.fixture
+def rhyme_analysis_sonnet():
+    return json.loads(
+        Path("tests/fixtures/rhyme_analysis_sonnet.json").read_text())
 
 
 def test_get_stressed_endings():
@@ -237,8 +248,8 @@ def test_get_rhymes_relaxation(stressed_endings):
     output = (
         ['-', 'a', '-', 'a', '-', 'a', '-', 'a', '-', 'b', '-', '-', '-', 'a',
          '-', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or', '',
-         'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or',
+         '', 'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
     )
     assert get_rhymes(stressed_endings, relaxation=True) == output
 
@@ -270,8 +281,8 @@ def test_get_rhymes_assonance_offset(stressed_endings):
     output = (
         ['-', 'a', '-', 'a', '-', 'a', '-', 'a', 'b', '-', 'c', 'a', 'c', 'a',
          '-', 'a'],
-        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o', '',
-         'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
+        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
+         '', 'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4
@@ -332,8 +343,8 @@ def test_get_rhymes_relaxation_unrhymed(stressed_endings):
     output = (
         ['$', 'a', '$', 'a', '$', 'a', '$', 'a', '$', 'b', '$', '$', '$', 'a',
          '$', 'b'],
-        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or', '',
-         'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', 'on', '', '', '', 'or',
+         '', 'on'], [0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, -2, 0, -2]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, unrhymed_verse_symbol="$"
@@ -370,8 +381,8 @@ def test_get_rhymes_assonance_offset_unrhymed(stressed_endings):
     output = (
         ['$', 'a', '$', 'a', '$', 'a', '$', 'a', 'b', '$', 'c', 'a', 'c', 'a',
          '$', 'a'],
-        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o', '',
-         'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
+        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
+         '', 'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4, unrhymed_verse_symbol="$"
@@ -425,41 +436,39 @@ def test_get_rhymes_assonance_relaxation_exceded_offset_unrhymed():
 
 
 def test_search_structure():
-    rhymes = 'abcbcbababdbdb-b'
-    syllables_count = [9, 7, 8, 8, 8, 8, 8, 7, 8, 8, 9, 7, 9, 8, 9, 7]
+    rhymes = 'aaaa'
+    ranges_list = [range(14, 16), range(14, 17), range(12, 15), range(15, 18)]
     key = "assonant"
-    assert STRUCTURES[search_structure(
-        rhymes, syllables_count, key
-    )][1] == 'romance'  # the romance structure is not defined very rigidly
+    assert search_structure(rhymes, ranges_list, key) == [50]
 
 
-def test_analyze_rhyme_haiku(haiku):
+def test_analyze_rhyme_haiku(rhyme_analysis_haiku):
     """
     Noche sin luna.
     La tempestad estruja
     los viejos cedros.
     """
-    assert analyze_rhyme(haiku)["name"] == 'haiku'
+    assert analyze_rhyme(rhyme_analysis_haiku)["name"] == 'haiku'
 
 
-def test_analyze_rhyme_sonnet(sonnet):
+def test_analyze_rhyme_sonnet(rhyme_analysis_sonnet):
     """
-    La lluvia en el cristal de la ventana,
-    el aire de una plaza compartida,
-    el pañuelo de sombras de la vida,
-    la noche de Madrid y su mañana,
-    el amor, la ilusión del porvenir,
-    el dolor, la verdad de lo perdido,
-    la constancia de un sueño decidido,
-    la humana libertad de decidir,
-    la prisa, la política, el mercado,
-    las noticias, la voz, el indiscreto
-    deseo de saber lo silenciado,
-    el rumor, las mentiras y el secreto,
-    todo lo que la muerte os ha quitado
-    quisiera devolverlo en un soneto.
+    Cruel amor, ¿tan fieras sinrazones
+    tras tanta confusión, tras pena tanta?
+    ¿De qué sirve la argolla a la garganta
+    a quién jamás huyó de sus prisiones?
+    ¿Hierro por premio das a mis pasiones?
+    Dueño cruel, tu sinrazón espanta,
+    el castigo a la pena se adelanta
+    y cuando sirvo bien hierros me pones.
+    ¡Gentil laurel, amor; buenos despojos!
+    Y en un sujeto a tus mudanzas firme
+    hierro, virote, lágrimas y enojos.
+    Mas pienso que has querido persuadirme
+    que trayendo los hierros a los ojos
+    no pueda de la causa arrepentirme.
     """
-    assert analyze_rhyme(sonnet)["name"] == 'sonnet'
+    assert analyze_rhyme(rhyme_analysis_sonnet)["name"] == 'sonnet'
 
 
 def test_analyze_rhyme_couplet(couplet):
@@ -569,10 +578,10 @@ def test_rhyme_analysis_serventesio():
 
 
 def test_rhyme_analysis_cuaderna_via():
-    poem = """Con sayal de amarguras, de la vida romero,
-    topé tras luenga andanza con la paz de un sendero.
-    Fenecía del día el resplandor postrero.
-    En la cima de un álamo sollozaba un jilguero."""
+    poem = """Mester traigo fermoso non es de juglaría
+    mester es sin pecado, ca es de clerecía
+    fablar curso rimado por la cuaderna vía
+    a sílabas cunctadas, ca es gran maestría."""
     output = "cuaderna_vía"
     input_poem = get_scansion(poem, rhyme_analysis=True)
     assert input_poem[0]["structure"] == output
@@ -678,7 +687,7 @@ def test_rhyme_silva_arromanzada():
     la sempiterna Paz. La negra barca
     llegó a la ansiada costa, y el sublime
     espíritu gozó la suma gracia;
-    y ¡oh Montaigne! Núñez vio la cruz erguirse,
+    ¡Montaigne! Núñez vio la cruz erguirse,
     y halló al pie de la sacra Vencedora
     el helado cadáver de la Esfinge."""
     output = "silva_arromanzada"

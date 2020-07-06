@@ -50,7 +50,7 @@ Rhythmical Analysis
 SPACE = "SPACE"
 STRONG_VOWELS = set("aeoáéóÁÉÓAEO")
 WEAK_VOWELS = set("iuüíúIÍUÜÚ")
-LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚyY")
+LIAISON_FIRST_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚyYhH")
 LIAISON_SECOND_PART = set("aeiouáéíóúAEIOUÁÉÍÓÚhyYH")
 
 STRESSED_UNACCENTED_MONOSYLLABLES = {"yo", "vio", "dio", "fe", "sol", "ti",

@@ -14,8 +14,12 @@ STRESSED_VOWELS = r"áéíóúäëïöü"
 TILDED_VOWELS = r"áéíóú"
 WEAK_VOWELS = r"iuïü"
 STRONG_VOWELS = r"aeoáéó"
-WEAK_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{STRONG_VOWELS}])',
-                            re.U | re.I)
+WEAK_STRONG_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{STRONG_VOWELS}])',
+                                   re.U | re.I)
+STRONG_WEAK_VOWELS_RE = re.compile(fr'([{STRONG_VOWELS}])[{WEAK_VOWELS}]',
+                                   re.U | re.I)
+WEAK_WEAK_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{WEAK_VOWELS}])',
+                                 re.U | re.I)
 VOWELS = fr"{UNSTRESSED_VOWELS}{STRESSED_VOWELS}"
 STRESSED_VOWELS_RE = re.compile(fr'[{STRESSED_VOWELS}]', re.U | re.I)
 TILDED_VOWELS_RE = re.compile(fr'[{TILDED_VOWELS}]', re.U | re.I)
@@ -43,6 +47,9 @@ def get_stressed_endings(lines):
             if "synalepha_index" in phonological_group:
                 synalepha_index = phonological_group["synalepha_index"][-1] + 1
                 syllable = phonological_group["syllable"][synalepha_index:]
+            elif "sinaeresis_index" in phonological_group:
+                sinaeresis_index = phonological_group["sinaeresis_index"][-1] + 1
+                syllable = phonological_group["syllable"][sinaeresis_index:]
             else:
                 syllable = phonological_group["syllable"]
             syllables.append(syllable)
@@ -87,7 +94,12 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
         if relaxation:
             relaxed_endings = []
             for syllable in stressed_ending:
-                relaxed_syllable = WEAK_VOWELS_RE.sub(r"\1", syllable, count=1)
+                relaxed_syllable = WEAK_STRONG_VOWELS_RE.sub(
+                    r"\1", syllable, count=1)
+                relaxed_syllable = STRONG_WEAK_VOWELS_RE.sub(
+                    r"\1", relaxed_syllable, count=1)
+                relaxed_syllable = WEAK_WEAK_VOWELS_RE.sub(
+                    r"\1", relaxed_syllable, count=1)
                 # Homophones
                 for find, change in HOMOPHONES:
                     relaxed_syllable = relaxed_syllable.replace(find, change)
@@ -193,7 +205,7 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     - rhyme pattern of each line (e.g., a, b, b, a)
     - rhyme ending of each line (e.g., ado, ón, ado, ón)
     The rhyme checking method can be assonant (assonance=True) or
-    consonant (default). Moreover, some dipthongs relaxing rules can be
+    consonant (default). Moreover, some diphthongs relaxing rules can be
     applied (relaxation=False) so the weak vowels are removed when checking
     the ending syllables.
     By default, all verses are checked, that means that a poem might match
@@ -220,14 +232,15 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     return rhymes, unstressed_endings, stresses
 
 
-def search_structure(rhyme, rhythmical_lengths, structure_key, structures=None):
+def search_structure(rhyme, length_ranges, structure_key, structures=None):
     """Search in stanza structures for a structure that matches assonance or
     consonance, a rhyme pattern (regex or callable), and a condition on the
     lengths of syllables of lines. For the first matching structure, its index
-    in STRUCTURES will be returned. An alternative STRUCTURES list can ba passed
+    in STRUCTURES will be returned. An alternative STRUCTURES list can be passed
     in structures."""
     if structures is None:
         structures = STRUCTURES
+    indices = []
     for index, (key, _, structure, func) in enumerate(structures):
         if callable(structure):
             structure_check = structure(rhyme)
@@ -236,8 +249,9 @@ def search_structure(rhyme, rhythmical_lengths, structure_key, structures=None):
             structure_check = structure_re.fullmatch(rhyme)
         if (key == structure_key
                 and structure_check
-                and func(rhythmical_lengths)):
-            return index
+                and func(length_ranges)):
+            indices.append(index)
+    return indices
 
 
 def analyze_rhyme(lines, offset=4):
@@ -255,8 +269,15 @@ def analyze_rhyme(lines, offset=4):
                 stressed_endings, assonance, relaxation, offset
             )
             rhyme = "".join(rhymes)
-            rhythmical_lengths = [line["rhythm"]["length"] for line in lines]
-            ranking = search_structure(rhyme, rhythmical_lengths, rhyme_type)
+            length_ranges = [
+                range(line["rhythm"]["length_range"]["min_length"],
+                      line["rhythm"]["length_range"]["max_length"] + 1)
+                for line in lines]
+            candidates = search_structure(rhyme, length_ranges, rhyme_type)
+            if len(candidates):
+                ranking, *_ = candidates
+            else:
+                ranking = None
             if ranking is not None and ranking < best_ranking:
                 best_ranking = ranking
                 best_structure = {

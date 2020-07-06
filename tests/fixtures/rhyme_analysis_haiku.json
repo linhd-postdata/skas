@@ -73,7 +73,11 @@
       "rhythm": {
          "stress": "+--+-",
          "type": "pattern",
-         "length": 5
+         "length": 5,
+         "length_range": {
+            "min_length": 5,
+            "max_length": 6
+         }
       },
       "structure": "haiku",
       "rhyme": "a",
@@ -167,7 +171,11 @@
       "rhythm": {
          "stress": "---+-+-",
          "type": "pattern",
-         "length": 7
+         "length": 7,
+         "length_range": {
+            "min_length": 7,
+            "max_length": 8
+         }
       },
       "structure": "haiku",
       "rhyme": "a",
@@ -248,7 +256,11 @@
       "rhythm": {
          "stress": "-+-+-",
          "type": "pattern",
-         "length": 5
+         "length": 5,
+         "length_range": {
+            "min_length": 5,
+            "max_length": 6
+         }
       },
       "structure": "haiku",
       "rhyme": "-",
