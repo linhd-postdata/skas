@@ -129,10 +129,10 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
 
 
 def apply_offset(codes, ending_codes, offset=4):
-    """Control how many lines of distnace should a matching rhyme occur at.
+    """Control how many lines of distance should a matching rhyme occur at.
     An offset can be set to an arbitrary number, effectively allowing rhymes
     that only occur between lines i and i + offset, and assigning a new rhyme
-    code when the offser is exceeded, even if the ending appeared before."""
+    code when the offset is exceeded, even if the ending appeared before."""
     code_numbers = ending_codes.copy()
     offset_indices = generate_exceeded_offset_indices(code_numbers, offset)
     for offset_index in offset_indices:
