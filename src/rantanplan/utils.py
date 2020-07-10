@@ -2,7 +2,7 @@
 from collections import Counter
 
 
-def generate_exceded_offset_indices(values, offset=4):
+def generate_exceeded_offset_indices(values, offset=4):
     """Yield the indices of the duplicated elements
     at offset + 1 positions from their previous one; or -1 if none found.
     For example, for an offset of 4 and a list of values as follows
