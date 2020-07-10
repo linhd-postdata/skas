@@ -428,7 +428,7 @@ def test_get_rhymes_assonance_relaxation_offset_unrhymed(stressed_endings):
     ) == output
 
 
-def test_get_rhymes_assonance_relaxation_exexceededffset_unrhymed():
+def test_get_rhymes_assonance_relaxation_exceeded_offset_unrhymed():
     stressed_endings = [
         (['car', 'cha'], 7, -2),
         (['po', 'bre'], 5, -2),
