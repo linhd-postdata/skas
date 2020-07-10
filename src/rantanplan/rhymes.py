@@ -8,7 +8,7 @@ from rantanplan.structures import ASSONANT_RHYME
 from rantanplan.structures import CONSONANT_RHYME
 from rantanplan.structures import STRUCTURES
 from rantanplan.utils import argcount
-from rantanplan.utils import generate_exceded_offset_indices
+from rantanplan.utils import generate_exceeded_offset_indices
 
 CONSONANTS = r"bcdfghjklmnñpqrstvwxyz"
 UNSTRESSED_VOWELS = r"aeiou"
@@ -132,9 +132,9 @@ def apply_offset(codes, ending_codes, offset=4):
     """Control how many lines of distnace should a matching rhyme occur at.
     An offset can be set to an arbitrary number, effectively allowing rhymes
     that only occur between lines i and i + offset, and assigning a new rhyme
-    code when the offser is exceded, even if the ending appeared before."""
+    code when the offser is exceeded, even if the ending appeared before."""
     code_numbers = ending_codes.copy()
-    offset_indices = generate_exceded_offset_indices(code_numbers, offset)
+    offset_indices = generate_exceeded_offset_indices(code_numbers, offset)
     for offset_index in offset_indices:
         max_code = max(code_numbers) + 1
         code_numbers = (

@@ -181,7 +181,7 @@ def get_assign_letter_codes_offset():
     assert assign_letter_codes(*clean_codes, offset=4) == output
 
 
-def test_assign_letter_codes_exceded_offset():
+def test_assign_letter_codes_exceeded_offset():
     clean_codes = (
         {0: 'Aa', 1: 'Oe', 2: 'Ia', 3: 'Oa'},
         [0, 1, 2, 1, 3, 0, 3],
@@ -428,7 +428,7 @@ def test_get_rhymes_assonance_relaxation_offset_unrhymed(stressed_endings):
     ) == output
 
 
-def test_get_rhymes_assonance_relaxation_exceded_offset_unrhymed():
+def test_get_rhymes_assonance_relaxation_exexceededffset_unrhymed():
     stressed_endings = [
         (['car', 'cha'], 7, -2),
         (['po', 'bre'], 5, -2),
