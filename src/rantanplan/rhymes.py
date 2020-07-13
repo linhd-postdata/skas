@@ -7,6 +7,8 @@ from spacy_affixes.utils import strip_accents
 from rantanplan.structures import ASSONANT_RHYME
 from rantanplan.structures import CONSONANT_RHYME
 from rantanplan.structures import STRUCTURES
+from rantanplan.utils import argcount
+from rantanplan.utils import generate_exceeded_offset_indices
 
 CONSONANTS = r"bcdfghjklmnñpqrstvwxyz"
 UNSTRESSED_VOWELS = r"aeiou"
@@ -71,11 +73,10 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
     """Clean syllables from stressed_endings depending on the rhyme kind,
     assonance or consonant, and some relaxation of diphthongs for rhyming
     purposes. Stress is also marked by upper casing the corresponding
-    syllable. The codes for the endings, the rhymes in numerical form, and
-    a set with endings of possible unrhymed verses are returned."""
+    syllable. The codes for the endings and the rhymes in numerical form
+    are returned."""
     codes = {}
     code_numbers = []
-    unique = set()
     # Clean consonants as needed and assign numeric codes
     for stressed_ending, _, stressed_position in stressed_endings:
         syllable = stressed_ending[stressed_position]
@@ -121,47 +122,45 @@ def get_clean_codes(stressed_endings, assonance=False, relaxation=False):
         ending = strip_accents(ending)
         if ending not in codes:
             codes[ending] = len(codes)
-            unique.add(codes[ending])
-        else:
-            unique.discard(codes[ending])
         code_numbers.append(codes[ending])
     # Invert codes to endings
     codes2endings = {v: k for k, v in codes.items()}
-    return codes2endings, code_numbers, unique
+    return codes2endings, code_numbers
 
 
-def assign_letter_codes(codes, code_numbers, unrhymed_verses, offset=None):
-    """Adjust for unrhymed verses and assign letter codes.
-    By default, all verses are checked, that means that a poem might match
-    lines 1 and 100 if the ending is the same. To control how many lines
-    should a matching rhyme occur in, an offset can be set to an arbitrary
-    number, effectively allowing rhymes that only occur between
-    lines i and i + offset."""
-    letters = {}
+def apply_offset(codes, ending_codes, offset=4):
+    """Control how many lines of distance should a matching rhyme occur at.
+    An offset can be set to an arbitrary number, effectively allowing rhymes
+    that only occur between lines i and i + offset, and assigning a new rhyme
+    code when the offset is exceeded, even if the ending appeared before."""
+    code_numbers = ending_codes.copy()
+    offset_indices = generate_exceeded_offset_indices(code_numbers, offset)
+    for offset_index in offset_indices:
+        max_code = max(code_numbers) + 1
+        code_numbers = (
+            code_numbers[:offset_index]
+            + [max_code if code == code_numbers[offset_index] else code
+               for code in code_numbers[offset_index:]]
+        )
+        codes[max_code] = codes[ending_codes[offset_index]]
+    return codes, code_numbers
+
+
+def assign_letter_codes(codes, code_numbers, unrhymed_verses):
+    """Adjust for unrhymed verses and assign consecutive codes.
+    """
+    rhyme_codes = {}
     rhymes = []
     endings = []
-    last_found = {}
-    for index, rhyme in enumerate(code_numbers):
+    for rhyme in code_numbers:
         if rhyme in unrhymed_verses:
-            rhyme_letter = -1  # unrhymed verse
             endings.append('')  # do not track unrhymed verse endings
-            rhymes.append(rhyme_letter)
+            rhymes.append(-1)  # unrhymed verse
         else:
-            if rhyme not in letters:
-                letters[rhyme] = len(letters)
-            rhyme_letter = letters[rhyme]
-            # Reassign unrhymed verses if an offset is set
-            if (rhyme in last_found
-                    and offset is not None
-                    and index - last_found[rhyme] > offset):
-                rhymes[last_found[rhyme]] = -1  # unrhymed verse
-                endings[last_found[rhyme]] = ''  # unrhymed verse ending
-                endings.append('')
-                rhymes.append(-1)
-            else:
-                endings.append(codes[rhyme])
-                rhymes.append(rhyme_letter)
-            last_found[rhyme] = index
+            if rhyme not in rhyme_codes:
+                rhyme_codes[rhyme] = len(rhyme_codes)
+            endings.append(codes[rhyme])
+            rhymes.append(rhyme_codes[rhyme])
     return rhymes, endings
 
 
@@ -216,14 +215,18 @@ def get_rhymes(stressed_endings, assonance=False, relaxation=False,
     using unrhymed_verse_symbol (defaults to '-')"""
     if unrhymed_verse_symbol is None:
         unrhymed_verse_symbol = "-"
-    # Get a numerical representation of rhymes using numbers and
-    # identifying unrhymed verses
-    codes, ending_codes, unrhymed_verses = get_clean_codes(
+    # Get a numerical representation of rhymes using numbers
+    codes, ending_codes = get_clean_codes(
         stressed_endings, assonance, relaxation
     )
+    # Apply offset to codes and ending_codes
+    if offset is not None:
+        codes, ending_codes = apply_offset(codes, ending_codes, offset)
+    # Get the indices of unrhymed verses
+    unrhymed_verses = argcount(ending_codes, count=1)
     # Get the actual rhymes and endings adjusting for unrhymed verses
     rhyme_codes, endings = assign_letter_codes(
-        codes, ending_codes, unrhymed_verses, offset
+        codes, ending_codes, unrhymed_verses
     )
     # Assign and reorder rhyme letters so first rhyme is always an 'a'
     rhymes = rhyme_codes_to_letters(rhyme_codes, unrhymed_verse_symbol)

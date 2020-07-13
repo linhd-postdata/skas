@@ -6,6 +6,7 @@ import pytest
 
 from rantanplan.core import get_scansion
 from rantanplan.rhymes import analyze_rhyme
+from rantanplan.rhymes import apply_offset
 from rantanplan.rhymes import assign_letter_codes
 from rantanplan.rhymes import get_clean_codes
 from rantanplan.rhymes import get_rhymes
@@ -114,8 +115,7 @@ def test_get_clean_codes(stressed_endings):
             0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdria', 4: 'Ados',
             5: 'Ado', 6: 'iOn', 7: 'Ia', 8: 'ON', 9: 'Illa', 10: 'Ero',
             11: 'On'},
-        [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 11],
-        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+        [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 11]
     )
     assert get_clean_codes(stressed_endings) == output
     assert get_clean_codes(stressed_endings, False, False) == output
@@ -125,8 +125,7 @@ def test_get_clean_codes_assonance(stressed_endings):
     output = (
         {
             0: 'Ao', 1: 'O', 2: 'Aa', 3: 'Aia', 4: 'iO', 5: 'Ia', 6: 'Eo'},
-        [0, 1, 2, 1, 3, 1, 0, 1, 0, 4, 5, 1, 5, 1, 6, 1],
-        {2, 3, 4, 6}
+        [0, 1, 2, 1, 3, 1, 0, 1, 0, 4, 5, 1, 5, 1, 6, 1]
     )
     assert get_clean_codes(stressed_endings, assonance=True) == output
     assert get_clean_codes(stressed_endings, True, False) == output
@@ -136,8 +135,7 @@ def test_get_clean_codes_relaxation(stressed_endings):
     output = (
         ({0: 'Ayo', 1: 'OR', 2: 'Añan', 3: 'ANdra', 4: 'Ados', 5: 'Ado',
           6: 'On', 7: 'Ia', 8: 'ON', 9: 'Iya', 10: 'Ero'},
-         [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 6],
-         {0, 2, 3, 4, 5, 7, 8, 9, 10})
+         [0, 1, 2, 1, 3, 1, 4, 1, 5, 6, 7, 8, 9, 1, 10, 6])
     )
     assert get_clean_codes(stressed_endings, relaxation=True) == output
     assert get_clean_codes(stressed_endings, False, True) == output
@@ -147,7 +145,6 @@ def test_get_clean_codes_assonance_relaxation(stressed_endings):
     output = (
         {0: 'Ao', 1: 'O', 2: 'Aa', 3: 'Ia', 4: 'Eo'},
         [0, 1, 2, 1, 2, 1, 0, 1, 0, 1, 3, 1, 3, 1, 4, 1],
-        {4},
     )
     assert get_clean_codes(
         stressed_endings, assonance=True, relaxation=True) == output
@@ -184,17 +181,17 @@ def get_assign_letter_codes_offset():
     assert assign_letter_codes(*clean_codes, offset=4) == output
 
 
-def test_assign_letter_codes_exceded_offset():
+def test_assign_letter_codes_exceeded_offset():
     clean_codes = (
         {0: 'Aa', 1: 'Oe', 2: 'Ia', 3: 'Oa'},
         [0, 1, 2, 1, 3, 0, 3],
         {2}
     )
     output = (
-        [-1, 1, -1, 1, 2, -1, 2],
-        ['', 'Oe', '', 'Oe', 'Oa', '', 'Oa']
+        [0, 1, -1, 1, 2, 0, 2],
+        ['Aa', 'Oe', '', 'Oe', 'Oa', 'Aa', 'Oa']
     )
-    assert assign_letter_codes(*clean_codes, offset=4) == output
+    assert assign_letter_codes(*clean_codes) == output
 
 
 def test_sort_rhyme_letters():
@@ -202,6 +199,16 @@ def test_sort_rhyme_letters():
     output = ['-', 'a', 'b', 'a', 'b', 'a', 'c', 'a',
               'c', 'a', 'd', 'a', 'd', 'a', '-', 'a']
     assert rhyme_codes_to_letters(rhymes_codes) == output
+
+
+def test_apply_offset():
+    codes = {0: 'Oo', 1: 'Ao', 2: 'IEo', 3: 'Aa', 4: 'Uo'}
+    code_numbers = [0, 1, 2, 1, 3, 3, 4, 4, 1, 1, 3, 3]
+    out = (
+        {0: 'Oo', 1: 'Ao', 2: 'IEo', 3: 'Aa', 4: 'Uo', 5: 'Ao', 6: 'Aa'},
+        [0, 1, 2, 1, 3, 3, 4, 4, 5, 5, 6, 6]
+    )
+    assert apply_offset(codes, code_numbers) == out
 
 
 def test_sort_rhyme_letters_unrhymed():
@@ -269,20 +276,22 @@ def test_get_rhymes_assonance_relaxation(stressed_endings):
 
 def test_get_rhymes_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', '-', '-', '-',
-         '-', '-'],
-        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-',
+         '-', '-', '-', '-'],
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '',
+         '', '', ''],
+        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(stressed_endings, offset=4) == output
 
 
 def test_get_rhymes_assonance_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', 'b', '-', 'c', 'a', 'c', 'a',
+        ['-', 'a', '-', 'a', '-', 'a', 'b', 'a', 'b', '-', 'c', 'a', 'c', 'a',
          '-', 'a'],
-        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
-         '', 'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
+        ['', 'o', '', 'o', '', 'o', 'ao', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
+         '', 'o'],
+        [0, -1, 0, -1, 0, -1, -2, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4
@@ -291,10 +300,11 @@ def test_get_rhymes_assonance_offset(stressed_endings):
 
 def test_get_rhymes_relaxation_offset(stressed_endings):
     output = (
-        ['-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', '-', '-', '-',
+        ['-', 'a', '-', 'a', '-', 'a', '-', 'a', '-', '-', '-', '-', '-', '-',
          '-', '-'],
-        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '',
+         ''],
+        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, offset=4
@@ -303,11 +313,11 @@ def test_get_rhymes_relaxation_offset(stressed_endings):
 
 def test_get_rhymes_assonance_relaxation_offset(stressed_endings):
     output = (
-        ['-', 'a', 'b', 'a', 'b', 'a', '-', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
+        ['-', 'a', 'b', 'a', 'b', 'a', 'c', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
          '-', 'a'],
-        ['', 'o', 'aa', 'o', 'aa', 'o', '', 'o', 'ao', 'o', 'ia', 'o', 'ia',
+        ['', 'o', 'aa', 'o', 'aa', 'o', 'ao', 'o', 'ao', 'o', 'ia', 'o', 'ia',
          'o', '', 'o'],
-        [0, -1, -2, -1, -2, -1, 0, -1, -2, -1, -2, -1, -2, -1, 0, -1]
+        [0, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, relaxation=True, offset=4
@@ -367,10 +377,11 @@ def test_get_rhymes_assonance_relaxation_unrhymed(stressed_endings):
 
 def test_get_rhymes_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$', '$', '$',
+        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$',
          '$', '$'],
-        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '',
+         ''],
+        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, offset=4, unrhymed_verse_symbol="$"
@@ -379,10 +390,11 @@ def test_get_rhymes_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_assonance_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', 'b', '$', 'c', 'a', 'c', 'a',
+        ['$', 'a', '$', 'a', '$', 'a', 'b', 'a', 'b', '$', 'c', 'a', 'c', 'a',
          '$', 'a'],
-        ['', 'o', '', 'o', '', 'o', '', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
-         '', 'o'], [0, -1, 0, -1, 0, -1, 0, -1, -2, 0, -2, -1, -2, -1, 0, -1]
+        ['', 'o', '', 'o', '', 'o', 'ao', 'o', 'ao', '', 'ia', 'o', 'ia', 'o',
+         '', 'o'],
+        [0, -1, 0, -1, 0, -1, -2, -1, -2, 0, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, offset=4, unrhymed_verse_symbol="$"
@@ -391,10 +403,11 @@ def test_get_rhymes_assonance_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_relaxation_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$', '$', '$',
+        ['$', 'a', '$', 'a', '$', 'a', '$', 'a', '$', '$', '$', '$', '$', '$',
          '$', '$'],
-        ['', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '', '', '', ''],
-        [0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ['', 'or', '', 'or', '', 'or', '', 'or', '', '', '', '', '', '', '',
+         ''],
+        [0, -2, 0, -2, 0, -2, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0]
     )
     assert get_rhymes(
         stressed_endings, relaxation=True, offset=4, unrhymed_verse_symbol="$"
@@ -403,11 +416,11 @@ def test_get_rhymes_relaxation_offset_unrhymed(stressed_endings):
 
 def test_get_rhymes_assonance_relaxation_offset_unrhymed(stressed_endings):
     output = (
-        ['$', 'a', 'b', 'a', 'b', 'a', '$', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
+        ['$', 'a', 'b', 'a', 'b', 'a', 'c', 'a', 'c', 'a', 'd', 'a', 'd', 'a',
          '$', 'a'],
-        ['', 'o', 'aa', 'o', 'aa', 'o', '', 'o', 'ao', 'o', 'ia', 'o', 'ia',
+        ['', 'o', 'aa', 'o', 'aa', 'o', 'ao', 'o', 'ao', 'o', 'ia', 'o', 'ia',
          'o', '', 'o'],
-        [0, -1, -2, -1, -2, -1, 0, -1, -2, -1, -2, -1, -2, -1, 0, -1]
+        [0, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, -2, -1, 0, -1]
     )
     assert get_rhymes(
         stressed_endings, assonance=True, relaxation=True, offset=4,
@@ -415,7 +428,7 @@ def test_get_rhymes_assonance_relaxation_offset_unrhymed(stressed_endings):
     ) == output
 
 
-def test_get_rhymes_assonance_relaxation_exceded_offset_unrhymed():
+def test_get_rhymes_assonance_relaxation_exceeded_offset_unrhymed():
     stressed_endings = [
         (['car', 'cha'], 7, -2),
         (['po', 'bre'], 5, -2),
