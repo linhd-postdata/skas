@@ -50,7 +50,13 @@ def get_stressed_endings(lines):
                 synalepha_index = phonological_group["synalepha_index"][-1] + 1
                 syllable = phonological_group["syllable"][synalepha_index:]
             elif "sinaeresis_index" in phonological_group:
-                sinaeresis_index = phonological_group["sinaeresis_index"][-1] + 1
+                # If the group has a tilded vowel, use that position
+                has_tilded_vowel = TILDED_VOWELS_RE.search(
+                    phonological_group["syllable"])
+                if has_tilded_vowel:
+                    sinaeresis_index = has_tilded_vowel.start()
+                else:
+                    sinaeresis_index = phonological_group["sinaeresis_index"][-1] + 1
                 syllable = phonological_group["syllable"][sinaeresis_index:]
             else:
                 syllable = phonological_group["syllable"]

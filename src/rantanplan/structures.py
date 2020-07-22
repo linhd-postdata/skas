@@ -32,7 +32,7 @@ STRUCTURES_LENGTH = {
     "seguidilla": ([7, 5, 7, 5], False),
     "chamberga": ([7, 5, 7, 5, 3, 7, 3, 7, 3, 7], False),
     "seguidilla_gitana": ([6, 6, 11, 6], False),
-    "estrofa_safica": ([11, 11, 11, 5], False),
+    "estrofa_sáfica": ([11, 11, 11, 5], False),
     "estrofa_sáfica_unamuno": ([11, 11, 7, 5], False),
     "estrofa_francisco_de_la_torre": ([11, 11, 11, 7], False),
     "endecha_real": ([7, 7, 7, 11], True),
@@ -43,7 +43,7 @@ STRUCTURES_LENGTH = {
     "haiku": ([5, 7, 5], False),
     "sonnet": (14*[11], False),
     "soleá": (3*[8], False),
-    "romance": ([8, 8, 8, 8], True),
+    "romance": ([8, 8], True),
     "copla_real": (10*[8], False),
     "espinela": (10*[8], False),
     "copla_castellana": (8*[8], False),
@@ -199,19 +199,19 @@ STRUCTURES = (
     ), (
         CONSONANT_RHYME,
         "seguidilla_compuesta",
-        r"((-a-a)|(abab))((a-a)|(b-b)|(c-c))",
+        r"((a-a-)|(-a-a)|(abab))((a-a)|(b-b)|(c-c))",
         lambda ranges_list: has_fixed_length_verses("seguidilla_compuesta",
                                                     ranges_list)
     ), (
         ASSONANT_RHYME,
         "seguidilla_compuesta",
-        r"((-a-a)|(abab))((a-a)|(b-b)|(c-c))",
+        r"((a-a-)|(-a-a)|(abab))((a-a)|(b-b)|(c-c))",
         lambda ranges_list: has_fixed_length_verses("seguidilla_compuesta",
                                                     ranges_list)
     ), (
         ASSONANT_RHYME,
         "chamberga",
-        r"((-a-a)|(abab)|[^a]a[^a]a)([^-]{2}){3}",
+        r"(([^a]a[^a]a)|(abab)|[^a]a[^a]a)([^-]{2}){3}",
         lambda ranges_list: has_fixed_length_verses("chamberga", ranges_list)
     ), (
         ASSONANT_RHYME,
@@ -221,7 +221,7 @@ STRUCTURES = (
     ), (
         ASSONANT_RHYME,
         "endecha_real",
-        r"(-a-a){2,}",
+        r"(-a-a){1,}",
         lambda ranges_list: has_fixed_length_verses("endecha_real", ranges_list)
     ), (
         CONSONANT_RHYME,
@@ -245,7 +245,7 @@ STRUCTURES = (
         ASSONANT_RHYME,
         "estrofa_sáfica",  # se puede encadenar?
         r"(----)|(a-a-)|(ab-b)|(abab)",
-        lambda ranges_list: has_fixed_length_verses("estrofa_safica", ranges_list)
+        lambda ranges_list: has_fixed_length_verses("estrofa_sáfica", ranges_list)
     ), (
         CONSONANT_RHYME,
         "estrofa_francisco_de_la_torre",
@@ -254,7 +254,7 @@ STRUCTURES = (
             "estrofa_francisco_de_la_torre", ranges_list)
     ), (
         ASSONANT_RHYME,
-        "francisco_de_la_torre",
+        "estrofa_francisco_de_la_torre",
         r"(----)|(a-a-)",
         lambda ranges_list: has_fixed_length_verses(
             "estrofa_francisco_de_la_torre", ranges_list)
@@ -267,8 +267,20 @@ STRUCTURES = (
                                                     fluctuation_size=1)
     ), (
         CONSONANT_RHYME,
+        "sextilla",
+        r"aabaab|abcabc|ababab|abbccb|aababa|aabccb|-aabba",
+        lambda ranges_list: (
+            has_maximum_length(ARTE_MENOR_MAX_LENGTH,
+                               ranges_list)
+        ) or (
+            has_mixed_length_verses(OCTOSYLLABLE,
+                                    TETRASYLLABLE,
+                                    ranges_list)
+        )
+    ), (
+        CONSONANT_RHYME,
         "sexteto_lira",
-        r"(ababcc)|(aabccb)|(abcabc)",
+        r"ababcc|aabccb|abcabc|abbacc",
         lambda ranges_list: has_mixed_length_verses(LIRA_LONG_LINE, LIRA_SHORT_LINE,
                                                     ranges_list)
     ), (
@@ -290,11 +302,6 @@ STRUCTURES = (
         )
     ), (
         CONSONANT_RHYME,
-        "terceto_encadenado",
-        is_terceto_encadenado,
-        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
-    ), (
-        CONSONANT_RHYME,
         "sonnet",
         r"(abba|abab|cddc|cdcd){2}((cd|ef){3}|(cde|efg){2}|[cde]{6})",
         lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
@@ -302,7 +309,8 @@ STRUCTURES = (
         CONSONANT_RHYME,
         "couplet",
         r"aa",
-        lambda ranges_list: (has_maximum_length(MAXIMUM_SAFE_LENGTH, ranges_list)
+        lambda ranges_list: (
+                            has_maximum_length(MAXIMUM_SAFE_LENGTH, ranges_list)
                              ) and (
                             has_minimum_length(MINIMUM_SAFE_LENGTH, ranges_list)
         )
@@ -323,19 +331,14 @@ STRUCTURES = (
         lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
     ), (
         CONSONANT_RHYME,
-        "sexteto",
-        r"(aabccb)|(aababa)|(-aabba)",
-        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
-    ), (
-        CONSONANT_RHYME,
         "sexta_rima",
-        r"(ababcc)|(aacbbc)",
+        r"ababcc|aabccb|aabcbc",
         lambda ranges_list: has_fixed_length_verses("sexta_rima", ranges_list)
     ), (
         CONSONANT_RHYME,
-        "sextilla",
-        r"(aabaab)|(abcabc)|(ababab)|(abbccb)|(aababa)",
-        lambda ranges_list: has_maximum_length(ARTE_MENOR_MAX_LENGTH, ranges_list)
+        "sexteto",
+        r"aabccb|aababa|-aabba|ababab|abcabc",
+        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
     ), (
         CONSONANT_RHYME,
         "redondilla",
@@ -393,8 +396,13 @@ STRUCTURES = (
         lambda ranges_list: has_maximum_length(ARTE_MENOR_MAX_LENGTH, ranges_list)
     ), (
         CONSONANT_RHYME,
+        "terceto_encadenado",
+        is_terceto_encadenado,
+        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
+    ), (
+        CONSONANT_RHYME,
         "copla_arte_menor",
-        r"(abbaacca)|(ababbccb)|(abbaacac)",
+        r"abbaacca|ababbccb|abbaacac|ababacca",
         lambda ranges_list: (
             has_same_length_verses(OCTOSYLLABLE, ranges_list)
         ) or (
@@ -465,7 +473,7 @@ STRUCTURES = (
     ), (
         ASSONANT_RHYME,
         "silva_arromanzada",
-        r"(([^a]a)+)|(.b)+",
+        r"(([^a]a)+)|([^b]b)+",
         lambda ranges_list: has_mixed_length_verses(SILVA_LONG_LINE,
                                                     SILVA_SHORT_LINE,
                                                     ranges_list)
@@ -505,14 +513,14 @@ STRUCTURES = (
                             )
     ), (
         CONSONANT_RHYME,
-        "septeto",
-        r".{7}",
-        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
-    ), (
-        CONSONANT_RHYME,
         "septilla",
         r".{7}",
         lambda ranges_list: has_maximum_length(ARTE_MENOR_MAX_LENGTH, ranges_list)
+    ), (
+        CONSONANT_RHYME,
+        "septeto",
+        r".{7}",
+        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
     ), (
         CONSONANT_RHYME,
         "novena",

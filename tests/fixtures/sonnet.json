@@ -6,12 +6,7 @@
          {
             "word": [
                {
-                  "syllable": "cru",
-                  "is_stressed": false,
-                  "has_sinaeresis": true
-               },
-               {
-                  "syllable": "el",
+                  "syllable": "Cruel",
                   "is_stressed": true,
                   "is_word_end": true
                }
@@ -88,8 +83,7 @@
       "phonological_groups": [
          {
             "syllable": "cru",
-            "is_stressed": false,
-            "has_sinaeresis": true
+            "is_stressed": false
          },
          {
             "syllable": "el",
@@ -820,12 +814,7 @@
          {
             "word": [
                {
-                  "syllable": "cru",
-                  "is_stressed": false,
-                  "has_sinaeresis": true
-               },
-               {
-                  "syllable": "el",
+                  "syllable": "cruel",
                   "is_stressed": true,
                   "is_word_end": true
                }
@@ -897,8 +886,7 @@
          },
          {
             "syllable": "cru",
-            "is_stressed": false,
-            "has_sinaeresis": true
+            "is_stressed": false
          },
          {
             "syllable": "el",

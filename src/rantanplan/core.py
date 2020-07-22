@@ -32,6 +32,7 @@ from .syllabification import RAISING_DIPHTHONGS_WITH_H
 from .syllabification import SPACE
 from .syllabification import STRESSED_PRON
 from .syllabification import STRESSED_UNACCENTED_MONOSYLLABLES
+from .syllabification import STRESSED_WEAK_VOWELS
 from .syllabification import STRONG_VOWELS
 from .syllabification import SYLLABIFICATOR_FOREIGN_WORDS_DICT
 from .syllabification import UNSTRESSED_FORMS
@@ -538,7 +539,7 @@ def get_word_stress(word, pos, tag, alternative_syllabification=False,
         if first_syllable and second_syllable and (
                 (first_syllable[-1] in STRONG_VOWELS
                  and second_syllable[0] in STRONG_VOWELS)
-                or (first_syllable[-1] in WEAK_VOWELS
+                or (first_syllable[-1] in STRESSED_WEAK_VOWELS
                     and second_syllable[0] in STRONG_VOWELS)
                 or (first_syllable[-1] in STRONG_VOWELS
                     and second_syllable[0] in WEAK_VOWELS)
@@ -569,7 +570,7 @@ def get_words(word_list, alternative_syllabification=False):
     word and stressed syllable index
 
     :param word_list: List of spacy objects representing a word or sentence
-    :param alternative_syllabification: Wether or not the alternative
+    :param alternative_syllabification: Whether or not the alternative
         syllabification is used
     :return: List with [original syllab. word, stressed syllab. word, negative
         index position of stressed syllable]
@@ -701,13 +702,13 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         if (token.pos_ == SPACE
                 and '\n' in token.orth_
                 and len(seen_tokens) > 0):
-            lines.append({"tokens": get_words(seen_tokens, True)})
+            lines.append({"tokens": get_words(seen_tokens, False)})
             raw_tokens.append(seen_tokens)
             seen_tokens = []
         else:
             seen_tokens.append(token)
     if len(seen_tokens) > 0:
-        lines.append({"tokens": get_words(seen_tokens, True)})
+        lines.append({"tokens": get_words(seen_tokens, False)})
         raw_tokens.append(seen_tokens)
     # Extract phonological groups and rhythm per line
     for line in lines:
