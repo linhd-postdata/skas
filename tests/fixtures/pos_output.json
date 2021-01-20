@@ -1,0 +1,194 @@
+[
+    {
+        "tokens": [
+            {
+                "word": [
+                    {
+                        "syllable": "Dí",
+                        "is_stressed": true
+                    },
+                    {
+                        "syllable": "se",
+                        "is_stressed": false
+                    },
+                    {
+                        "syllable": "lo",
+                        "is_stressed": false,
+                        "is_word_end": true,
+                        "has_synalepha": true
+                    }
+                ],
+                "stress_position": -3,
+                "pos": "VERB+PRON+PRON"
+            },
+            {
+                "word": [
+                    {
+                        "syllable": "al",
+                        "is_stressed": false,
+                        "is_word_end": true
+                    }
+                ],
+                "stress_position": 0,
+                "pos": "ADP"
+            },
+            {
+                "word": [
+                    {
+                        "syllable": "hé",
+                        "is_stressed": true
+                    },
+                    {
+                        "syllable": "ro",
+                        "is_stressed": false,
+                        "has_sinaeresis": true
+                    },
+                    {
+                        "syllable": "e",
+                        "is_stressed": false,
+                        "is_word_end": true
+                    }
+                ],
+                "stress_position": -3,
+                "pos": "NOUN"
+            }
+        ],
+        "phonological_groups": [
+            {
+                "syllable": "Dí",
+                "is_stressed": true
+            },
+            {
+                "syllable": "se",
+                "is_stressed": false
+            },
+            {
+                "syllable": "loal",
+                "is_stressed": false,
+                "synalepha_index": [
+                    1
+                ],
+                "is_word_end": true
+            },
+            {
+                "syllable": "hé",
+                "is_stressed": true
+            },
+            {
+                "syllable": "roe",
+                "is_stressed": false,
+                "sinaeresis_index": [
+                    1
+                ],
+                "is_word_end": true
+            }
+        ],
+        "rhythm": {
+            "stress": "+--+-",
+            "type": "pattern",
+            "length": 5
+        }
+    },
+    {
+        "tokens": [
+            {
+                "word": [
+                    {
+                        "syllable": "que",
+                        "is_stressed": false,
+                        "is_word_end": true
+                    }
+                ],
+                "stress_position": 0,
+                "pos": "PRON"
+            },
+            {
+                "word": [
+                    {
+                        "syllable": "rá",
+                        "is_stressed": true
+                    },
+                    {
+                        "syllable": "pi",
+                        "is_stressed": false
+                    },
+                    {
+                        "syllable": "da",
+                        "is_stressed": false
+                    },
+                    {
+                        "syllable": "men",
+                        "is_stressed": true
+                    },
+                    {
+                        "syllable": "te",
+                        "is_stressed": false,
+                        "is_word_end": true
+                    }
+                ],
+                "stress_position": -5,
+                "secondary_stress_positions": [
+                    -2
+                ],
+                "pos": "ADV"
+            },
+            {
+                "word": [
+                    {
+                        "syllable": "vi",
+                        "is_stressed": false
+                    },
+                    {
+                        "syllable": "vió",
+                        "is_stressed": true,
+                        "is_word_end": true
+                    }
+                ],
+                "stress_position": -1,
+                "pos": "VERB"
+            }
+        ],
+        "phonological_groups": [
+            {
+                "syllable": "que",
+                "is_stressed": false,
+                "is_word_end": true
+            },
+            {
+                "syllable": "rá",
+                "is_stressed": true
+            },
+            {
+                "syllable": "pi",
+                "is_stressed": false
+            },
+            {
+                "syllable": "da",
+                "is_stressed": false
+            },
+            {
+                "syllable": "men",
+                "is_stressed": true
+            },
+            {
+                "syllable": "te",
+                "is_stressed": false,
+                "is_word_end": true
+            },
+            {
+                "syllable": "vi",
+                "is_stressed": false
+            },
+            {
+                "syllable": "vió",
+                "is_stressed": true,
+                "is_word_end": true
+            }
+        ],
+        "rhythm": {
+            "stress": "-+--+--+-",
+            "type": "pattern",
+            "length": 9
+        }
+    }
+]

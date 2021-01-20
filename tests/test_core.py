@@ -55,6 +55,12 @@ def haiku():
     return json.loads(Path("tests/fixtures/haiku.json").read_text())
 
 
+@pytest.fixture
+def pos_output():
+    return json.loads(
+        Path("tests/fixtures/pos_output.json").read_text())
+
+
 class TokenMock(mock.MagicMock):
     _ = property(lambda self: mock.Mock(has_tmesis=self.has_tmesis,
                                         line=self.line))
@@ -1261,3 +1267,132 @@ def test_get_word_stress_last_word_false():
             {'syllable': 'oh', 'is_stressed': False}], 'stress_position': 0},
         {'symbol': '!'}]
     assert get_words(text) == output
+
+
+def test_get_scansion_pos_output():
+    text = "patata"
+    output = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'pa', 'is_stressed': False},
+                {'syllable': 'ta', 'is_stressed': True},
+                {'syllable': 'ta', 'is_stressed': False, 'is_word_end': True}
+            ],
+                'stress_position': -2,
+                'pos': 'NOUN'}
+        ],
+            'phonological_groups': [
+                {'syllable': 'pa', 'is_stressed': False},
+                {'syllable': 'ta', 'is_stressed': True},
+                {'syllable': 'ta', 'is_stressed': False,
+                 'is_word_end': True}
+            ],
+            'rhythm': {'stress': '-+-', 'type': 'pattern', 'length': 3}
+        }
+    ]
+    assert get_scansion(text, pos_output=True) == output
+    assert _get_scansion(text,  pos_output=True) == output
+
+
+def test_get_scansion_pos_output_affixes():
+    text = "dímelo"
+    output = [{
+        'tokens': [
+            {'word': [{'syllable': 'dí', 'is_stressed': True},
+                      {'syllable': 'me', 'is_stressed': False},
+                      {'syllable': 'lo',
+                       'is_stressed': False,
+                       'is_word_end': True}],
+             'stress_position': -3,
+             'pos': 'VERB+PRON+PRON'}],
+        'phonological_groups': [{'syllable': 'dí', 'is_stressed': True},
+                                {'syllable': 'me', 'is_stressed': False},
+                                {'syllable': 'lo',
+                                 'is_stressed': False,
+                                 'is_word_end': True}],
+        'rhythm': {'stress': '+-', 'type': 'pattern', 'length': 2}
+    }]
+    assert get_scansion(text, pos_output=True) == output
+    assert _get_scansion(text, pos_output=True) == output
+
+
+def test_get_scansion_pos_output_affixes_mente():
+    text = "dímelo mismamente"
+    output = [
+        {'tokens': [{'word': [{'syllable': 'dí', 'is_stressed': True},
+                              {'syllable': 'me', 'is_stressed': False},
+                              {'syllable': 'lo',
+                               'is_stressed': False,
+                               'is_word_end': True}],
+                     'stress_position': -3,
+                     'pos': 'VERB+PRON+DET'},
+                    {'word': [{'syllable': 'mis', 'is_stressed': True},
+                              {'syllable': 'ma', 'is_stressed': False},
+                              {'syllable': 'men', 'is_stressed': True},
+                              {'syllable': 'te',
+                               'is_stressed': False,
+                               'is_word_end': True}],
+                     'stress_position': -4,
+                     'secondary_stress_positions': [-2],
+                     'pos': 'ADV'}],
+         'phonological_groups': [{'syllable': 'dí', 'is_stressed': True},
+                                 {'syllable': 'me', 'is_stressed': False},
+                                 {'syllable': 'lo',
+                                  'is_stressed': False,
+                                  'is_word_end': True},
+                                 {'syllable': 'mis', 'is_stressed': True},
+                                 {'syllable': 'ma', 'is_stressed': False},
+                                 {'syllable': 'men', 'is_stressed': True},
+                                 {'syllable': 'te',
+                                  'is_stressed': False,
+                                  'is_word_end': True}],
+         'rhythm': {'stress': '+--+-+-', 'type': 'pattern', 'length': 7}}
+    ]
+    assert get_scansion(text, pos_output=True) == output
+    assert _get_scansion(text, pos_output=True) == output
+
+
+def test_get_scansion_sinaeresis_synalepha_affixes_pos_output():
+    text = "antiquísimo héroe"
+    output = [
+        {'tokens': [{'word': [{'syllable': 'an', 'is_stressed': False},
+                              {'syllable': 'ti', 'is_stressed': False},
+                              {'syllable': 'quí', 'is_stressed': True},
+                              {'syllable': 'si', 'is_stressed': False},
+                              {'syllable': 'mo',
+                               'is_stressed': False,
+                               'has_synalepha': True,
+                               'is_word_end': True}],
+                     'stress_position': -3,
+                     'pos': 'DET'},
+                    {'word': [{'syllable': 'hé', 'is_stressed': True},
+                              {'syllable': 'ro',
+                               'is_stressed': False,
+                               'has_sinaeresis': True},
+                              {'syllable': 'e',
+                               'is_stressed': False,
+                               'is_word_end': True}],
+                     'stress_position': -3,
+                     'pos': 'NOUN'}],
+         'phonological_groups': [{'syllable': 'an', 'is_stressed': False},
+                                 {'syllable': 'ti', 'is_stressed': False},
+                                 {'syllable': 'quí', 'is_stressed': True},
+                                 {'syllable': 'si', 'is_stressed': False},
+                                 {'syllable': 'mohé',
+                                  'is_stressed': True,
+                                  'synalepha_index': [1]},
+                                 {'syllable': 'roe',
+                                  'is_stressed': False,
+                                  'sinaeresis_index': [1],
+                                  'is_word_end': True}],
+         'rhythm': {'stress': '--+-+-', 'type': 'pattern', 'length': 6}}
+    ]
+    assert get_scansion(text, pos_output=True) == output
+    assert _get_scansion(text, pos_output=True) == output
+
+
+def test_get_scansion_pos_output_mente(pos_output):
+    text = """Díselo al héroe
+    que rápidamente vivió"""
+    assert get_scansion(text, pos_output=True) == pos_output
+    assert _get_scansion(text,  pos_output=True) == pos_output
