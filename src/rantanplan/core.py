@@ -565,13 +565,14 @@ def get_last_syllable(token_list):
                 return token['word'][-1]
 
 
-def get_words(word_list, alternative_syllabification=False):
+def get_words(word_list, alternative_syllabification=False, pos_output=False):
     """Gets a list of syllables from a word and creates a list with syllabified
     word and stressed syllable index
 
     :param word_list: List of spacy objects representing a word or sentence
     :param alternative_syllabification: Whether or not the alternative
         syllabification is used
+    :param pos_output: `True` or `False` for printing the PoS of the words
     :return: List with [original syllab. word, stressed syllab. word, negative
         index position of stressed syllable]
     :rtype: list
@@ -598,10 +599,12 @@ def get_words(word_list, alternative_syllabification=False):
                 stressed_word.update(
                     {'affixes_length': word._.affixes_length})
                 stressed_word.update({'pos': word.pos_, 'tag': word.tag_})
+            if pos_output:
+                stressed_word.update({'pos': pos})
             syllabified_words.append(stressed_word)
         else:
             syllabified_words.append({"symbol": word.text})
-    syllabified_words = join_affixes(syllabified_words)
+    syllabified_words = join_affixes(syllabified_words, pos_output)
     clean_word_list = [syll for syll in syllabified_words if "word" in syll]
     # Synalepha
     for index, word in enumerate(clean_word_list):
@@ -614,10 +617,11 @@ def get_words(word_list, alternative_syllabification=False):
     return syllabified_words
 
 
-def join_affixes(line):
+def join_affixes(line, pos_output=False):
     """Join affixes of split words and recalculates stress
 
     :param line: List of syllabified words (dict)
+    :param pos_output: `True` or `False` for printing the PoS of the words
     :return: List of syllabified words (dict) with joined affixes
     :rtype: list
     """
@@ -639,11 +643,16 @@ def join_affixes(line):
                                           word["tag"])
             word_stress["word"][-1]["is_word_end"] = True
             syllabified_words.append(word_stress)
+            if pos_output:
+                pos_list = [line[index]['pos'] for index in indices_to_ignore]
+                join_pos = "+".join(pos_list)
+                word_stress.update({'pos': join_pos})
     return syllabified_words if syllabified_words else line
 
 
 def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
-                 rhythmical_lengths=None, split_stanzas_on=None):
+                 rhythmical_lengths=None, split_stanzas_on=None,
+                 pos_output=False):
     """Generates a list of dictionaries for each line
 
     :param text: Full text to be analyzed
@@ -653,6 +662,7 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         that the analysed lines has to meet
     :param split_stanzas_on: Regular expression to split text in stanzas.
         Defaults to None for not splitting.
+    :param pos_output: `True` or `False` for printing the PoS of the words
     :return: list of dictionaries per line
         (or list of list of dictionaries if split on stanzas)
     :rtype: list
@@ -662,7 +672,8 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
             text=text,
             rhyme_analysis=rhyme_analysis,
             rhythm_format=rhythm_format,
-            rhythmical_lengths=rhythmical_lengths
+            rhythmical_lengths=rhythmical_lengths,
+            pos_output=pos_output,
         )
     else:
         return [
@@ -670,13 +681,15 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                 text=stanza,
                 rhyme_analysis=rhyme_analysis,
                 rhythm_format=rhythm_format,
-                rhythmical_lengths=rhythmical_lengths
+                rhythmical_lengths=rhythmical_lengths,
+                pos_output=pos_output,
             ) for stanza in re.compile(split_stanzas_on).split(text)
         ]
 
 
 def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
-                  rhythmical_lengths=None, split_stanzas_on=None):
+                  rhythmical_lengths=None, split_stanzas_on=None,
+                  pos_output=False):
     """Generates a list of dictionaries for each line
 
     :param text: Full text to be analyzed
@@ -686,6 +699,7 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         that the analysed lines has to meet
     :param split_stanzas_on: String or regular expression to split text in
         stanzas. Defaults to None for not splitting.
+    :param pos_output: `True` or `False` for printing the PoS of the words
     :return: list of dictionaries per line
     :rtype: list
     """
@@ -702,13 +716,13 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
         if (token.pos_ == SPACE
                 and '\n' in token.orth_
                 and len(seen_tokens) > 0):
-            lines.append({"tokens": get_words(seen_tokens, False)})
+            lines.append({"tokens": get_words(seen_tokens, False, pos_output)})
             raw_tokens.append(seen_tokens)
             seen_tokens = []
         else:
             seen_tokens.append(token)
     if len(seen_tokens) > 0:
-        lines.append({"tokens": get_words(seen_tokens, False)})
+        lines.append({"tokens": get_words(seen_tokens, False, pos_output)})
         raw_tokens.append(seen_tokens)
     # Extract phonological groups and rhythm per line
     for line in lines:
@@ -750,7 +764,8 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                 structure_length = structure_length * repetitions
         if structure_length:
             if line["rhythm"]["length"] < structure_length[idx]:
-                candidates = generate_phonological_groups(raw_tokens[idx])
+                candidates = generate_phonological_groups(raw_tokens[idx],
+                                                          pos_output)
                 for candidate in candidates:
                     rhythm = get_rhythmical_pattern(
                         candidate, rhythm_format,
@@ -771,15 +786,16 @@ def break_on_h(liaison_type, syllable_left, syllable_right):
     )
 
 
-def generate_phonological_groups(tokens):
+def generate_phonological_groups(tokens, pos_output=False):
     """Generates phonological groups from a list of tokens
 
     :param tokens: list of spaCy tokens
+    :param pos_output: `True` or `False` for printing the PoS of the words
     :return: Generator with a list of phonological groups
     :rtype: generator
     """
     for alternative_syllabification in (True, False):
-        words = get_words(tokens, alternative_syllabification)
+        words = get_words(tokens, alternative_syllabification, pos_output)
         syllables = get_syllables_word_end(words)
         for liaison in (
                 ("synalepha",),
