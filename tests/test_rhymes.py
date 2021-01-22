@@ -449,7 +449,7 @@ def test_get_rhymes_assonance_relaxation_exceeded_offset_unrhymed():
 
 
 def test_search_structure():
-    rhymes = 'aaaa'
+    rhymes = '-a-a'
     ranges_list = [range(14, 16), range(14, 17), range(12, 15), range(15, 18)]
     key = "assonant"
     assert search_structure(rhymes, ranges_list, key) == [50]

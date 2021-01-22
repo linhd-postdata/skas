@@ -188,6 +188,7 @@ SYLLABIFICATOR_FOREIGN_WORDS_DICT = {
     "schnauzer": "sch-nau-zer",
     "score": "s-core",
     "shakesperiano": "sha-kes-pe-ria-no",
+    "Shakespeare": "Shake-speare",
     "shapra": "sha-pra",
     "shaurire": "shau-ri-re",
     "shawarma": "sha-war-ma",

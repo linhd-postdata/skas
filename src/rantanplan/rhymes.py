@@ -16,12 +16,14 @@ STRESSED_VOWELS = r"áéíóúäëïöü"
 TILDED_VOWELS = r"áéíóú"
 WEAK_VOWELS = r"iuïü"
 STRONG_VOWELS = r"aeoáéó"
-WEAK_STRONG_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{STRONG_VOWELS}])',
+WEAK_STRONG_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}](h?[{STRONG_VOWELS}])',
                                    re.U | re.I)
-STRONG_WEAK_VOWELS_RE = re.compile(fr'([{STRONG_VOWELS}])[{WEAK_VOWELS}]',
+STRONG_WEAK_VOWELS_RE = re.compile(fr'([{STRONG_VOWELS}]h?)[{WEAK_VOWELS}]',
                                    re.U | re.I)
-WEAK_WEAK_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}]([{WEAK_VOWELS}])',
+WEAK_WEAK_VOWELS_RE = re.compile(fr'[{WEAK_VOWELS}](h?[{WEAK_VOWELS}])',
                                  re.U | re.I)
+STRONG_STRONG_VOWELS_RE = re.compile(fr'[{STRONG_VOWELS}](h?[{STRONG_VOWELS}])',
+                                     re.U | re.I)
 VOWELS = fr"{UNSTRESSED_VOWELS}{STRESSED_VOWELS}"
 STRESSED_VOWELS_RE = re.compile(fr'[{STRESSED_VOWELS}]', re.U | re.I)
 TILDED_VOWELS_RE = re.compile(fr'[{TILDED_VOWELS}]', re.U | re.I)

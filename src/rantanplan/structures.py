@@ -180,7 +180,7 @@ def is_terceto_encadenado(rhyme_pattern):
     """
     string_pattern = [str(c) for c in get_rhyme_pattern_counts(rhyme_pattern)]
     rhyme_pattern_count = "".join(string_pattern)
-    return bool(re.match(r"001(102)*(101(1)?|1-2)", rhyme_pattern_count))
+    return bool(re.match(r"^001(102)*(101(1)?|102)$", rhyme_pattern_count))
 
 
 STRUCTURES = (
@@ -337,7 +337,7 @@ STRUCTURES = (
     ), (
         CONSONANT_RHYME,
         "sexteto",
-        r"aabccb|aababa|-aabba|ababab|abcabc",
+        r"aabccb|aababa|-aabba|ababab|abcabc|.{6}",
         lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
     ), (
         CONSONANT_RHYME,
@@ -378,7 +378,11 @@ STRUCTURES = (
         CONSONANT_RHYME,
         "copla_arte_mayor",
         r"(abbaacca)|(ababbccb)|(abbaacac)",
-        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
+        lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH,
+                                               ranges_list)
+        and not (
+            has_maximum_length(ARTE_MENOR_MAX_LENGTH, ranges_list)
+        )
     ), (
         CONSONANT_RHYME,
         "copla_mixta",
@@ -402,9 +406,9 @@ STRUCTURES = (
     ), (
         CONSONANT_RHYME,
         "copla_arte_menor",
-        r"abbaacca|ababbccb|abbaacac|ababacca",
+        r"abbaacca|ababbccb|abbaacac|ababacca|abbaabba",
         lambda ranges_list: (
-            has_same_length_verses(OCTOSYLLABLE, ranges_list)
+            has_maximum_length(ARTE_MENOR_MAX_LENGTH, ranges_list)
         ) or (
             has_mixed_length_verses(OCTOSYLLABLE, TETRASYLLABLE, ranges_list)
         )
@@ -447,7 +451,13 @@ STRUCTURES = (
         ((ababa)|(abaab)|(abbab)|(aabab)|(aabba)
         (cdcdc)|(cdccd)|(cddcd)|(ccdcd)|(ccddc))""",
         # tiene versos quebrados, cambiar regla de ranges_list?
-        lambda ranges_list: has_fixed_length_verses("copla_real", ranges_list)
+        lambda ranges_list: (
+            has_fixed_length_verses("copla_real",
+                                    ranges_list)
+        ) or (
+            has_same_length_verses(OCTOSYLLABLE,
+                                   ranges_list)
+        )
     ), (
         CONSONANT_RHYME,
         "lira",
@@ -490,7 +500,7 @@ STRUCTURES = (
     ), (
         ASSONANT_RHYME,
         "romance_arte_mayor",
-        r"((.b)+)|((.a)+)",
+        r"((.b)+)|(([^a]a)+)",
         lambda ranges_list: has_minimum_length(ARTE_MAYOR_MIN_LENGTH, ranges_list)
     ), (
         ASSONANT_RHYME,
@@ -505,7 +515,12 @@ STRUCTURES = (
     ), (
         CONSONANT_RHYME,
         "décima_antigua",
-        r"abbaacccca|abbaacccaa",
+        r"""
+        abbaacccca|abbaacccaa|abbaacc.c.|abbacddcdd|abaabacdcd|abbacdecde|
+        abaabbabab|abaabbcccb|abbaaccaac|abbaabcddc|abbaccaaac|abbaccdddc|
+        abbacddcee|abba.cccc.|ababbcbcdd|abaabccaac|ababbacddc|ababcdcdcc|
+        abbaacacca|abaabbcbbc
+        """,
         lambda ranges_list: (
             has_mixed_length_verses(OCTOSYLLABLE, TETRASYLLABLE, ranges_list)
         ) or (
