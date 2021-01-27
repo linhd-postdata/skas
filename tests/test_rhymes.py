@@ -9,6 +9,7 @@ from rantanplan.rhymes import analyze_rhyme
 from rantanplan.rhymes import apply_offset
 from rantanplan.rhymes import assign_letter_codes
 from rantanplan.rhymes import get_clean_codes
+from rantanplan.rhymes import get_ending_with_liaison
 from rantanplan.rhymes import get_rhymes
 from rantanplan.rhymes import get_stressed_endings
 from rantanplan.rhymes import rhyme_codes_to_letters
@@ -767,3 +768,110 @@ def test_get_stressed_endings_sinalepha():
         (["i", "ra"], 6, -2)
     ]
     assert get_stressed_endings(lines) == output
+
+
+def test_get_stressed_endings_synalepha_stressed_vowels():
+    lines = [
+        {'tokens': [
+            {'word': [
+                {'syllable': 'A', 'is_stressed': False},
+                {'syllable': 'yer', 'is_stressed': True,
+                 'is_word_end': True}],
+                'stress_position': -1}, {
+                'word': [
+                    {'syllable': 'so', 'is_stressed': False},
+                    {'syllable': 'ñé', 'is_stressed': True,
+                     'is_word_end': True}],
+                'stress_position': -1}, {
+                'word': [
+                    {'syllable': 'que', 'is_stressed': False,
+                     'is_word_end': True}],
+                'stress_position': 0}, {
+                'word': [
+                    {'syllable': 've', 'is_stressed': False,
+                     'has_sinaeresis': True},
+                    {'syllable': 'í', 'is_stressed': True,
+                     'has_sinaeresis': True},
+                    {'syllable': 'a', 'is_stressed': False,
+                     'is_word_end': True}],
+                'stress_position': -2}],
+            'phonological_groups': [
+                {'syllable': 'A', 'is_stressed': False},
+                {'syllable': 'yer', 'is_stressed': True,
+                 'is_word_end': True},
+                {'syllable': 'so', 'is_stressed': False},
+                {'syllable': 'ñé', 'is_stressed': True,
+                 'is_word_end': True},
+                {'syllable': 'que', 'is_stressed': False,
+                 'is_word_end': True},
+                {'syllable': 'veía', 'is_stressed': True,
+                 'sinaeresis_index': [1, 2],
+                 'is_word_end': True}],
+            'rhythm': {'stress': '-+-+-+-', 'type': 'pattern', 'length': 7,
+                       'length_range': {'min_length': 7, 'max_length': 9}}}, {
+            'tokens': [
+                {'word': [
+                    {'syllable': 'y', 'is_stressed': False,
+                     'is_word_end': True}],
+                    'stress_position': 0}, {
+                    'word': [
+                        {'syllable': 'so', 'is_stressed': False},
+                        {'syllable': 'ñé', 'is_stressed': True,
+                         'is_word_end': True}], 'stress_position': -1},
+                {'word': [
+                    {'syllable': 'que', 'is_stressed': False,
+                     'is_word_end': True}], 'stress_position': 0},
+                {'word': [
+                    {'syllable': 'Dios', 'is_stressed': True,
+                     'is_word_end': True}], 'stress_position': -1},
+                {'word': [
+                    {'syllable': 'me', 'is_stressed': False,
+                     'has_synalepha': True, 'is_word_end': True}],
+                    'stress_position': 0},
+                {'word': [
+                    {'syllable': 'o', 'is_stressed': False,
+                     'has_sinaeresis': True},
+                    {'syllable': 'í', 'is_stressed': True,
+                     'has_sinaeresis': True},
+                    {'syllable': 'a', 'is_stressed': False,
+                     'is_word_end': True}],
+                    'stress_position': -2}, {'symbol': '...'}],
+            'phonological_groups': [
+                {'syllable': 'y', 'is_stressed': False,
+                 'is_word_end': True},
+                {'syllable': 'so',
+                 'is_stressed': False},
+                {'syllable': 'ñé', 'is_stressed': True,
+                 'is_word_end': True},
+                {'syllable': 'que',
+                 'is_stressed': False,
+                 'is_word_end': True},
+                {'syllable': 'Dios',
+                 'is_stressed': True,
+                 'is_word_end': True},
+                {'syllable': 'meoía',
+                 'is_stressed': True,
+                 'synalepha_index': [1],
+                 'is_word_end': True}],
+            'rhythm': {'stress': '--+-++-', 'type': 'pattern', 'length': 7,
+                       'length_range': {'min_length': 7,
+                                        'max_length': 8}}}
+    ]
+    output = [(['ía'], 6, -1), (['ía'], 6, -1)]
+    assert get_stressed_endings(lines) == output
+
+
+def test_get_ending_with_liaison_sinaeresis():
+    phonological_group = {'syllable': 'veía', 'is_stressed': True,
+                          'sinaeresis_index': [1, 2], 'is_word_end': True}
+    liaison = "sinaeresis"
+    output = "ía"
+    assert get_ending_with_liaison(phonological_group, liaison) == output
+
+
+def test_get_ending_with_liaison_synalepha():
+    phonological_group = {'syllable': 'veía', 'is_stressed': True,
+                          'sinaeresis_index': [1, 2], 'is_word_end': True}
+    liaison = "synalepha"
+    output = "ía"
+    assert get_ending_with_liaison(phonological_group, liaison) == output

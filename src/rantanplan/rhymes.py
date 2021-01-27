@@ -40,6 +40,20 @@ HOMOPHONES = [
 ]
 
 
+def get_ending_with_liaison(phonological_group, liaison):
+    """Get position of the tilded vowel from a phonological group with a liaison
+    and uses that index to get the rhyming syllable
+    """
+    has_tilded_vowel = TILDED_VOWELS_RE.search(
+        phonological_group["syllable"])
+    if has_tilded_vowel:
+        liaison_index = has_tilded_vowel.start()
+    else:
+        liaison_index = phonological_group[f"{liaison}_index"][-1] + 1
+    syllable = phonological_group["syllable"][liaison_index:]
+    return syllable
+
+
 def get_stressed_endings(lines):
     """Return a list of word endings starting at the stressed position,
     from a scansion lines list of tokens as input"""
@@ -49,17 +63,11 @@ def get_stressed_endings(lines):
         for phonological_group in line["phonological_groups"]:
             # Break groups on last synalepha index position if present
             if "synalepha_index" in phonological_group:
-                synalepha_index = phonological_group["synalepha_index"][-1] + 1
-                syllable = phonological_group["syllable"][synalepha_index:]
+                syllable = get_ending_with_liaison(
+                    phonological_group, "synalepha")
             elif "sinaeresis_index" in phonological_group:
-                # If the group has a tilded vowel, use that position
-                has_tilded_vowel = TILDED_VOWELS_RE.search(
-                    phonological_group["syllable"])
-                if has_tilded_vowel:
-                    sinaeresis_index = has_tilded_vowel.start()
-                else:
-                    sinaeresis_index = phonological_group["sinaeresis_index"][-1] + 1
-                syllable = phonological_group["syllable"][sinaeresis_index:]
+                syllable = get_ending_with_liaison(
+                    phonological_group, "sinaeresis")
             else:
                 syllable = phonological_group["syllable"]
             syllables.append(syllable)
