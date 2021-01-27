@@ -521,9 +521,11 @@ def test_get_scansion(scansion_sonnet):
     «Ya el tiempo nos convida
     A los estudios nobles...»!"""
     assert get_scansion(
-        text, rhythm_format="pattern", rhyme_analysis=True) == scansion_sonnet
+        text, rhythm_format="pattern", rhyme_analysis=True,
+        always_return_rhyme=True) == scansion_sonnet
     assert _get_scansion(
-        text, rhythm_format="pattern", rhyme_analysis=True) == scansion_sonnet
+        text, rhythm_format="pattern", rhyme_analysis=True,
+        always_return_rhyme=True) == scansion_sonnet
 
 
 def test_get_scansion_stressed_last_syllable():

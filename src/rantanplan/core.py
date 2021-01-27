@@ -652,7 +652,7 @@ def join_affixes(line, pos_output=False):
 
 def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                  rhythmical_lengths=None, split_stanzas_on=None,
-                 pos_output=False):
+                 pos_output=False, always_return_rhyme=False):
     """Generates a list of dictionaries for each line
 
     :param text: Full text to be analyzed
@@ -663,6 +663,8 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
     :param split_stanzas_on: Regular expression to split text in stanzas.
         Defaults to None for not splitting.
     :param pos_output: `True` or `False` for printing the PoS of the words
+    :param always_return_rhyme: `True` or `False` for printing rhyme pattern
+        even if no structure is detected
     :return: list of dictionaries per line
         (or list of list of dictionaries if split on stanzas)
     :rtype: list
@@ -674,6 +676,7 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
             rhythm_format=rhythm_format,
             rhythmical_lengths=rhythmical_lengths,
             pos_output=pos_output,
+            always_return_rhyme=always_return_rhyme
         )
     else:
         return [
@@ -683,13 +686,14 @@ def get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                 rhythm_format=rhythm_format,
                 rhythmical_lengths=rhythmical_lengths,
                 pos_output=pos_output,
+                always_return_rhyme=always_return_rhyme,
             ) for stanza in re.compile(split_stanzas_on).split(text)
         ]
 
 
 def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                   rhythmical_lengths=None, split_stanzas_on=None,
-                  pos_output=False):
+                  pos_output=False, always_return_rhyme=False):
     """Generates a list of dictionaries for each line
 
     :param text: Full text to be analyzed
@@ -700,6 +704,8 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
     :param split_stanzas_on: String or regular expression to split text in
         stanzas. Defaults to None for not splitting.
     :param pos_output: `True` or `False` for printing the PoS of the words
+    :param always_return_rhyme: `True` or `False` for printing rhyme pattern
+        even if no structure is detected
     :return: list of dictionaries per line
     :rtype: list
     """
@@ -737,11 +743,12 @@ def _get_scansion(text, rhyme_analysis=False, rhythm_format="pattern",
                                              rhyme_analysis=rhyme_analysis)
         })
     if rhyme_analysis:
-        analyzed_lines = analyze_rhyme(lines)
+        analyzed_lines = analyze_rhyme(lines,
+                                       always_return_rhyme=always_return_rhyme)
         if analyzed_lines is not None:
             for rhyme in [analyzed_lines]:
                 for index, line in enumerate(lines):
-                    line["structure"] = rhyme["name"]
+                    line["structure"] = rhyme.get("name", "unknown")
                     line["rhyme"] = rhyme["rhyme"][index]
                     line["ending"] = rhyme["endings"][index]
                     line["ending_stress"] = rhyme["endings_stress"][index]

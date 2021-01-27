@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import string
+from collections import Counter
 
 from spacy_affixes.utils import strip_accents
 
@@ -273,12 +274,13 @@ def search_structure(rhyme, length_ranges, structure_key, structures=None):
     return indices
 
 
-def analyze_rhyme(lines, offset=4):
+def analyze_rhyme(lines, offset=4, always_return_rhyme=False):
     """Analyze the syllables of a text to propose a possible set of
     rhyme structure, rhyme name, rhyme endings, and rhyme pattern"""
     stressed_endings = get_stressed_endings(lines)
     best_ranking = len(STRUCTURES)
     best_structure = None
+    analyses = []
     # Prefer consonance to assonance
     for assonance in (False, True):
         rhyme_type = ASSONANT_RHYME if assonance else CONSONANT_RHYME
@@ -292,6 +294,13 @@ def analyze_rhyme(lines, offset=4):
                 range(line["rhythm"]["length_range"]["min_length"],
                       line["rhythm"]["length_range"]["max_length"] + 1)
                 for line in lines]
+            analysis = {
+                "rhyme": rhymes,
+                "endings": endings,
+                "endings_stress": endings_stress,
+                "rhyme_type": rhyme_type,
+                "rhyme_relaxation": relaxation
+            }
             candidates = search_structure(rhyme, length_ranges, rhyme_type)
             if len(candidates):
                 ranking, *_ = candidates
@@ -308,5 +317,33 @@ def analyze_rhyme(lines, offset=4):
                     "rhyme_type": rhyme_type,
                     "rhyme_relaxation": relaxation
                 }
+            else:
+                analyses.append(analysis)
     if best_structure is not None:
         return best_structure
+    elif always_return_rhyme:
+        best_candidate = get_best_rhyme_candidate(analyses)
+        return best_candidate
+
+
+def get_best_rhyme_candidate(candidates):
+    """From a list of candidates, return the one with the most rhymed verses,
+    with priority:
+        1 - consonant rhyme and relaxing rules
+        2 - consonant rhyme and no relaxing rules
+        3 - assonant rhyme and no relaxing rules
+        4 - assonant rhyme and no relaxing rules
+    :param candidates: List of analyzed_lines
+    :type candidates: list
+    :return: Best rhyme candidate
+    :rtype: dict
+    """
+    n_rhymes = 0
+    candidate_index = 0
+    for index, candidate in enumerate(candidates):
+        n_rhymes_candidate = len(candidates[0]["rhyme"]) - Counter(
+            candidate["rhyme"]).get('-', 0)
+        if n_rhymes_candidate > n_rhymes:
+            n_rhymes = n_rhymes_candidate
+            candidate_index = index
+    return candidates[candidate_index]

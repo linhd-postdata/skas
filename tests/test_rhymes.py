@@ -8,6 +8,7 @@ from rantanplan.core import get_scansion
 from rantanplan.rhymes import analyze_rhyme
 from rantanplan.rhymes import apply_offset
 from rantanplan.rhymes import assign_letter_codes
+from rantanplan.rhymes import get_best_rhyme_candidate
 from rantanplan.rhymes import get_clean_codes
 from rantanplan.rhymes import get_ending_with_liaison
 from rantanplan.rhymes import get_rhymes
@@ -875,3 +876,28 @@ def test_get_ending_with_liaison_synalepha():
     liaison = "synalepha"
     output = "ía"
     assert get_ending_with_liaison(phonological_group, liaison) == output
+
+
+def test_get_best_rhyme_candidate():
+    """Siempre en octubre comenzaba el año.
+    ¡Y cuántas veces esa luz de otoño
+    me recordó a Fray Luis:
+    «Ya el tiempo nos convida
+    A los estudios tacaños...»!"""
+    candidates = [
+        {'rhyme': ['-', '-', '-', '-', '-'], 'endings': ['', '', '', '', ''],
+         'endings_stress': [0, 0, 0, 0, 0], 'rhyme_type': 'consonant',
+         'rhyme_relaxation': True},
+        {'rhyme': ['-', '-', '-', '-', '-'], 'endings': ['', '', '', '', ''],
+         'endings_stress': [0, 0, 0, 0, 0], 'rhyme_type': 'consonant',
+         'rhyme_relaxation': False},
+        {'rhyme': ['a', '-', '-', '-', 'a'],
+         'endings': ['ao', '', '', '', 'ao'],
+         'endings_stress': [-2, 0, 0, 0, -2],
+         'rhyme_type': 'assonant',
+         'rhyme_relaxation': True},
+        {'rhyme': ['a', '-', '-', '-', 'a'],
+         'endings': ['ao', '', '', '', 'ao'],
+         'endings_stress': [-2, 0, 0, 0, -2], 'rhyme_type': 'assonant',
+         'rhyme_relaxation': False}]
+    assert get_best_rhyme_candidate(candidates) == candidates[2]
