@@ -2,6 +2,77 @@
 Changelog
 =========
 
+
+0.6.0 (2021-01-28)
+------------------
+
+* Option to show rhyme pattern.
+* Better documentation and README
+* Fixed rhyme issue when synalepha present on rhyming syllables
+* Add PoS to the output.
+* Added more rhyme patterns to stanzas rules, better handling of diphthongs with 'h'.
+* Refactorization, typos fixed, and added more tests.
+
+0.5.0 (2020-09-28)
+------------------
+
+Added support for the automatic detection of most Spanish stanzas:
+
+* Cantar
+* Chamberga
+* Copla arte mayor
+* Copla arte menor
+* Copla castellana
+* Copla mixta
+* Copla real
+* Couplet
+* Cuaderna vía
+* Cuarteta
+* Cuarteto
+* Cuarteto lira
+* Décima antigua
+* Endecha real
+* Espinela
+* Estrofa francisco de la torre
+* Estrofa manriqueña
+* Estrofa sáfica
+* Estrofa sáfica unamuno
+* Haiku
+* Lira
+* Novena
+* Octava
+* Octava real
+* Octavilla
+* Ovillejo
+* Quinteto
+* Quintilla
+* Redondilla
+* Romance
+* Romance arte mayor
+* Seguidilla
+* Seguidilla compuesta
+* Seguidilla gitana
+* Septeto
+* Septeto lira
+* Septilla
+* Serventesio
+* Sexta rima
+* Sexteto
+* Sexteto lira
+* Sextilla
+* Silva arromanzada
+* Soleá
+* Tercetillo
+* Terceto
+* Terceto encadenado
+* Terceto monorrimo
+
+0.4.3 (2020-03-24)
+------------------
+
+* Added support for filtering consecutive liaisons and syllabification
+* Added missing documentation
+
 0.4.2 (2020-03-11)
 ------------------
 
