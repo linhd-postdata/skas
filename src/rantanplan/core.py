@@ -657,10 +657,12 @@ def join_affixes(line):
             # stress to the last syllable and set the rest to False
             if last_word_stress == -3 and last_word_is_paroxytone:
                 set_stress_exceptions(last_word)
+                last_word["stress_position"] = -1
             # If last word is proparoxytone and is not and adverb, change the
             # stress to the last syllable and set the rest to False
             elif last_word_stress <= -4 and not last_word_is_adverb:
                 set_stress_exceptions(last_word)
+                last_word["stress_position"] = -1
     return syllabified_words if syllabified_words else line
 
 

@@ -1308,7 +1308,7 @@ def test_get_scansion_pos_output_affixes():
                       {'syllable': 'lo',
                        'is_stressed': True,
                        'is_word_end': True}],
-             'stress_position': -3,
+             'stress_position': -1,
              'pos': 'VERB+PRON+PRON'}],
         'phonological_groups': [{'syllable': 'dí', 'is_stressed': False},
                                 {'syllable': 'me', 'is_stressed': False},
